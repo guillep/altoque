@@ -1,3 +1,11 @@
+"
+| blockList |
+blockList := CECallGraphBuilder buildHIRFromMethod: SequenceableCollection >> #do:.
+blockList := CECallGraphBuilder buildHIRFromMethod: Integer>>#slowFactorial.
+
+CEHIRPrinter print: blockList
+
+"
 Class {
 	#name : #CECallGraphBuilder,
 	#superclass : #Object,
