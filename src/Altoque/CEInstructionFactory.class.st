@@ -35,7 +35,7 @@ CEInstructionFactory >> initialize [
 ]
 
 { #category : #factory }
-CEInstructionFactory >> newBlockBeginWithBytecodeIndex: anInteger method: aMethod [ 
+CEInstructionFactory >> newBlockBeginWithBytecodeIndex: anInteger [ 
 
 	^ CEBlockBeginOperation
 		newWithID: self allocateBlockID

@@ -121,24 +121,23 @@ CECallGraphBuilder >> buildDominatorTreeFrom: aPredecessor to: aCEBlock [
 { #category : #building }
 CECallGraphBuilder >> buildStartBlock [
 	| start |
-	start := instructionFactory
-		newBlockBeginWithBytecodeIndex: 0
-		method: bytecodeScanner method.
-	start
-		next:
-			(CEJumpOperation new
-				bytecodeIndex: 0;
-				begin: start).
-	start end: start next.
-	start end addSuccessor: blockList first.
+	start := CEBlock new
+		id: instructionFactory allocateBlockID;
+		bytecodeIndex: 0.
+	start firstInstruction: (instructionFactory newBlockBeginWithBytecodeIndex: 0).
+	start firstInstruction next: (CEJumpOperation new
+		bytecodeIndex: 0;
+		begin: start).
+
+	start firstInstruction end: start firstInstruction next.
+	start firstInstruction end addSuccessor: blockList first.
 	blockList first addPredecessor: start.
-	
+
 	temporaryArray := Array new: bytecodeScanner method numTemps.
 	1 to: bytecodeScanner method numArgs do: [ :i | 
 		| argument |
 		argument := CEArgumentOperation new index: i.
 		temporaryArray at: i put: argument ].
-	
 	^ start
 ]
 
@@ -174,7 +173,10 @@ CECallGraphBuilder >> doPop [
 CECallGraphBuilder >> fillBlockWithInstructions: index [
 
 	| blockLimitPC |	
-	currentInstruction := currentBlock := blockList at: index.
+	currentBlock := blockList at: index.
+	currentInstruction := instructionFactory newBlockBeginWithBytecodeIndex: currentBlock bytecodeIndex.
+	currentBlock firstInstruction: currentInstruction.
+	
 	operandStack := Stack new.
 	
 	currentBlock isLoopHeader
@@ -241,11 +243,9 @@ CECallGraphBuilder >> jump: anInteger [
 		begin: currentBlock.
 	self append: instruction.
 	self push: instruction.
-	currentBlock end: instruction.
-	
+	currentBlock firstInstruction end: instruction.
+
 	instruction jumpTarget: targetBlock.
-	instruction addSuccessor: targetBlock.
-	targetBlock addPredecessor: currentBlock.
 	
 	anInteger < 0 ifTrue: [ instruction beBackwardsBranch ]
 ]
@@ -263,7 +263,7 @@ CECallGraphBuilder >> jump: anInteger if: aBoolean [
 		condition: aBoolean.
 	self append: instruction.
 	self push: instruction.
-	currentBlock end: instruction.
+	currentBlock firstInstruction end: instruction.
 	
 	instruction jumpTarget: targetBlock.
 	instruction addSuccessor: targetBlock.
@@ -374,7 +374,7 @@ CECallGraphBuilder >> return: aValue [
 		result: aValue.
 	self append: instruction.
 	self push: instruction.
-	currentBlock end: instruction.
+	currentBlock firstInstruction end: instruction.
 ]
 
 { #category : #accessing }

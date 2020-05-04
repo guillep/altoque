@@ -10,7 +10,7 @@ Class {
 { #category : #printing }
 CEJumpOperation >> description [
 	
-	^ 'goto B', successors anyOne blockID asString 
+	^ 'goto B', jumpTarget id asString
 ]
 
 { #category : #accessing }

@@ -24,29 +24,29 @@ CEHIRPrinter class >> printBlock: aCEBlock [
 ]
 
 { #category : #printing }
-CEHIRPrinter class >> printBlockHeader: aCEBlockBeginOperation [ 
+CEHIRPrinter class >> printBlockHeader: aBlock [ 
 	
 	Transcript
 		show: 'B';
-		show: aCEBlockBeginOperation blockID.
+		show: aBlock blockID.
 	Transcript
 		show: '[';
-		show: aCEBlockBeginOperation bytecodeIndex;
+		show: aBlock bytecodeIndex;
 		show: ', ';
-		show: aCEBlockBeginOperation end bytecodeIndex;
+		show: aBlock end bytecodeIndex;
 		show: ']'.
 	
-	aCEBlockBeginOperation hasPredecessors ifTrue: [
+	aBlock hasPredecessors ifTrue: [
 		Transcript show: ' pred '.
-		aCEBlockBeginOperation predecessors do: [ :p |
+		aBlock predecessors do: [ :p |
 			Transcript
 				show: 'B';
 				show: p blockID
 		] separatedBy: [ Transcript space ] ].
 
-	aCEBlockBeginOperation hasSuccessors ifTrue: [
+	aBlock hasSuccessors ifTrue: [
 		Transcript show: ' sux '.
-		aCEBlockBeginOperation successors do: [ :p |
+		aBlock successors do: [ :p |
 			Transcript
 				show: 'B';
 				show: p blockID
