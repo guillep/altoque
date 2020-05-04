@@ -9,7 +9,7 @@ Class {
 		'nextBlockID',
 		'currentBlock',
 		'incoming',
-		'lastInstructionFellThrough'
+		'fallThroughNextInstruction'
 	],
 	#category : #Altoque
 }
@@ -145,12 +145,12 @@ CEBlockListBuilder >> instructionFactory: aCEInstructionFactory [
 CEBlockListBuilder >> interpretInstruction: aBlockClosure [
 
 	currentPC := bytecodeScanner pc.
-	lastInstructionFellThrough := true.
+	fallThroughNextInstruction := true.
 	aBlockClosure value.
 	currentBlock := blocks
 		detect: [ :b | b bytecodeIndex = bytecodeScanner pc ]
 		ifFound: [ :nextBlock |
-			(lastInstructionFellThrough and: [ nextBlock ~~ currentBlock  ]) ifTrue: [ 
+			(fallThroughNextInstruction and: [ nextBlock ~~ currentBlock  ]) ifTrue: [ 
 				self trackIncomingBytecode: currentPC - 1 toBlock: nextBlock ].
 			nextBlock ]
 		ifNone: [ currentBlock ].
@@ -162,7 +162,7 @@ CEBlockListBuilder >> jump: offset [
 	self doJumpTo: offset.
 	
 	"Unconditional jumps do not fall through"
-	lastInstructionFellThrough := false.
+	fallThroughNextInstruction := false.
 ]
 
 { #category : #'instruction decoding' }
@@ -193,10 +193,11 @@ CEBlockListBuilder >> methodReturnTop [
 CEBlockListBuilder >> return [
 
 	| pcAfterReturn |
+	fallThroughNextInstruction := false.
 	pcAfterReturn := bytecodeScanner pc.
 	"Returns delimit blocks"
-	pcAfterReturn > bytecodeScanner method endPC
-		ifFalse: [ self appendBlockAtBytecodeIndex: pcAfterReturn ]
+	pcAfterReturn <= bytecodeScanner endPC
+		ifTrue: [ self appendBlockAtBytecodeIndex: pcAfterReturn ]
 ]
 
 { #category : #building }
