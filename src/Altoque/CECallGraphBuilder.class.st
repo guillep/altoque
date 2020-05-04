@@ -100,22 +100,13 @@ CECallGraphBuilder >> build [
 { #category : #'dominator-tree' }
 CECallGraphBuilder >> buildDominatorTreeFrom: aCEBlock [
 
-	aCEBlock successors do: [ :s | self buildDominatorTreeFrom: aCEBlock to: s ]
-]
-
-{ #category : #'dominator-tree' }
-CECallGraphBuilder >> buildDominatorTreeFrom: aPredecessor to: aCEBlock [
-	
-	| predecessorsNotVisited |
-	predecessorsNotVisited := visitedIncomingEdges at: aCEBlock ifAbsentPut: [ aCEBlock predecessors size ].
-	visitedIncomingEdges at: aCEBlock put: (predecessorsNotVisited := predecessorsNotVisited - 1).
-	aCEBlock dominator: (aCEBlock dominator
-		ifNil: [ aPredecessor ]
-		ifNotNil: [ :currentDominator | self commonDominatorBetween: currentDominator and: aPredecessor ]).
-	
-	predecessorsNotVisited = aCEBlock incomingBackwardBranches
-		ifFalse: [ ^ self ].
-	self buildDominatorTreeFrom: aCEBlock
+	self
+		depthFirstSearchStartingAt: aCEBlock
+		doing: [ :sux :pred |
+			sux dominator: (sux dominator
+				ifNil: [ pred ]
+				ifNotNil: [ :currentDominator | 
+					self commonDominatorBetween: currentDominator and: pred ]) ]
 ]
 
 { #category : #building }
@@ -155,6 +146,27 @@ CECallGraphBuilder >> commonDominatorBetween: path1 and: path2 [
 	[ path2Dominator notNil ] whileTrue: [ 
 		(path1Dominators includes: path2Dominator) ifTrue: [ ^ path2Dominator ].
 		path2Dominator := path2Dominator dominator ].
+]
+
+{ #category : #'dominator-tree' }
+CECallGraphBuilder >> depthFirstSearchFrom: predecessor to: successor doing: aBlockClosure [
+
+	| predecessorsNotVisited |
+	predecessorsNotVisited := visitedIncomingEdges at: successor ifAbsentPut: [ successor predecessors size ].
+	visitedIncomingEdges at: successor put: (predecessorsNotVisited := predecessorsNotVisited - 1).
+	
+	aBlockClosure value: successor value: predecessor.
+	
+	predecessorsNotVisited = successor incomingBackwardBranches
+		ifFalse: [ ^ self ].
+	self depthFirstSearchStartingAt: successor doing: aBlockClosure
+]
+
+{ #category : #'dominator-tree' }
+CECallGraphBuilder >> depthFirstSearchStartingAt: aCEBlock doing: aBlock [
+
+	aCEBlock successors do: [ :s | 
+		self depthFirstSearchFrom: aCEBlock to: s doing: aBlock ]
 ]
 
 { #category : #building }
