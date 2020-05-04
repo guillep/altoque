@@ -6,7 +6,7 @@ Class {
 		'successors',
 		'isBackwardsBranch'
 	],
-	#category : #Altoque
+	#category : #'Altoque-High-Level-IR'
 }
 
 { #category : #accessing }

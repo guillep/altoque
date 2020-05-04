@@ -9,7 +9,7 @@ Class {
 		'blocks',
 		'jumpTarget'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Tests'
 }
 
 { #category : #'test-immediate-forward-branch' }

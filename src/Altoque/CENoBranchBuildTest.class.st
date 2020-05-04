@@ -5,7 +5,7 @@ Class {
 		'blockBytecodeIndex',
 		'builder'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Tests'
 }
 
 { #category : #'tests-no-branch' }

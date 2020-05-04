@@ -12,7 +12,7 @@ Class {
 		'fallThroughNextInstruction',
 		'endPC'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Base'
 }
 
 { #category : #building }

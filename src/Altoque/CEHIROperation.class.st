@@ -6,7 +6,7 @@ Class {
 		'bytecodeIndex',
 		'next'
 	],
-	#category : #Altoque
+	#category : #'Altoque-High-Level-IR'
 }
 
 { #category : #'instance creation' }

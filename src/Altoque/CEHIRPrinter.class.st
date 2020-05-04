@@ -1,7 +1,7 @@
 Class {
 	#name : #CEHIRPrinter,
 	#superclass : #Object,
-	#category : #Altoque
+	#category : #'Altoque-Base'
 }
 
 { #category : #printing }

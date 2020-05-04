@@ -6,7 +6,7 @@ Class {
 		'selector',
 		'arguments'
 	],
-	#category : #Altoque
+	#category : #'Altoque-High-Level-IR'
 }
 
 { #category : #'instance creation' }

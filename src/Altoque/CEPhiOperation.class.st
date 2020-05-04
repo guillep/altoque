@@ -6,7 +6,7 @@ Class {
 		'v2',
 		'operations'
 	],
-	#category : #Altoque
+	#category : #'Altoque-High-Level-IR'
 }
 
 { #category : #accessing }

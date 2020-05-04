@@ -6,7 +6,7 @@ Class {
 		'condition',
 		'jumpTarget'
 	],
-	#category : #Altoque
+	#category : #'Altoque-High-Level-IR'
 }
 
 { #category : #accessing }

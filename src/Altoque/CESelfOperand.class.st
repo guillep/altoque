@@ -1,5 +1,5 @@
 Class {
 	#name : #CESelfOperand,
 	#superclass : #CEArgumentOperation,
-	#category : #Altoque
+	#category : #'Altoque-High-Level-IR'
 }

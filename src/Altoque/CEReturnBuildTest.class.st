@@ -7,7 +7,7 @@ Class {
 		'endPC',
 		'pcAfterReturn'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Tests'
 }
 
 { #category : #helpers }

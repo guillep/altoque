@@ -9,7 +9,7 @@ Class {
 		'incomingBackwardBranches',
 		'dominator'
 	],
-	#category : #Altoque
+	#category : #'Altoque-High-Level-IR'
 }
 
 { #category : #'instance creation' }

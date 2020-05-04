@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'jumpTarget'
 	],
-	#category : #Altoque
+	#category : #'Altoque-High-Level-IR'
 }
 
 { #category : #printing }

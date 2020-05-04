@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'pc'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Tests'
 }
 
 { #category : #testing }

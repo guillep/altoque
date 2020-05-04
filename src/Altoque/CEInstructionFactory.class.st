@@ -5,7 +5,7 @@ Class {
 		'nextInstructionID',
 		'nextBlockID'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Base'
 }
 
 { #category : #initialization }
@@ -38,7 +38,7 @@ CEInstructionFactory >> initialize [
 CEInstructionFactory >> newBlockBeginWithBytecodeIndex: anInteger [ 
 
 	^ CEBlockBeginOperation
-		newWithID: self allocateBlockID
+		newWithID: self allocateInstructionID
 		bytecodeIndex: anInteger
 ]
 

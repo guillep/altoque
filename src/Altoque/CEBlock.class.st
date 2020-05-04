@@ -11,7 +11,7 @@ Class {
 		'dominator',
 		'locals'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Base'
 }
 
 { #category : #accessing }

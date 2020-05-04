@@ -7,7 +7,7 @@ Class {
 		'jumpNextPC',
 		'jumpTargetPC'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Tests'
 }
 
 { #category : #'test-immediate-forward-branch' }

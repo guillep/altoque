@@ -6,7 +6,7 @@ Class {
 		'inState',
 		'outState'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Base'
 }
 
 { #category : #executing }

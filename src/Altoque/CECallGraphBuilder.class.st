@@ -22,7 +22,7 @@ Class {
 		'selfOperand',
 		'visitedIncomingEdges'
 	],
-	#category : #Altoque
+	#category : #'Altoque-Base'
 }
 
 { #category : #processing }
