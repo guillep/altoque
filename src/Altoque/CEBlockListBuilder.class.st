@@ -9,7 +9,8 @@ Class {
 		'nextBlockID',
 		'currentBlock',
 		'incoming',
-		'fallThroughNextInstruction'
+		'fallThroughNextInstruction',
+		'endPC'
 	],
 	#category : #Altoque
 }
@@ -88,11 +89,10 @@ CEBlockListBuilder >> build [
 { #category : #building }
 CEBlockListBuilder >> buildBlocksFrom: aBytecodeMethod [ 
 	
-	| endPC |
 	self bytecodeScanner: (InstructionStream on: aBytecodeMethod).
 	currentBlock := self startOnBytecodeIndex: aBytecodeMethod initialPC.
-
-	endPC := aBytecodeMethod endPC.	
+	self endPC: aBytecodeMethod endPC.	
+	
 	[bytecodeScanner pc <= endPC] whileTrue: [
 		self interpretInstruction: [ bytecodeScanner interpretNextInstructionFor: self ].
 	].
@@ -126,6 +126,18 @@ CEBlockListBuilder >> doJumpTo: offset [
 	"Keep track of back jumps.
 	The incoming set of entries is used later to calculate successors at the end"
 	self trackIncomingBytecode: currentPC toBlock: jumpBlock.
+]
+
+{ #category : #accessing }
+CEBlockListBuilder >> endPC [
+	
+	^ endPC
+]
+
+{ #category : #accessing }
+CEBlockListBuilder >> endPC: aProgramCounter [
+	
+	endPC := aProgramCounter
 ]
 
 { #category : #initialization }
@@ -196,7 +208,7 @@ CEBlockListBuilder >> return [
 	fallThroughNextInstruction := false.
 	pcAfterReturn := bytecodeScanner pc.
 	"Returns delimit blocks"
-	pcAfterReturn <= bytecodeScanner endPC
+	pcAfterReturn <= self endPC
 		ifTrue: [ self appendBlockAtBytecodeIndex: pcAfterReturn ]
 ]
 

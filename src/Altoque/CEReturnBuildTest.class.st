@@ -29,7 +29,7 @@ CEReturnBuildTest >> setUp [
 	"** Block 1 **"
 	pc := initialPC.
 	pcAfterReturn := pc + 1.
-	endPC := pcAfterReturn + 1.
+	builder endPC: (endPC := pcAfterReturn + 1).
 	builder interpretInstruction: [ 
 		pc := pcAfterReturn.
 		builder methodReturnTop ].
