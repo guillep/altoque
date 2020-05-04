@@ -93,6 +93,11 @@ CEBlock >> id: anObject [
 ]
 
 { #category : #accessing }
+CEBlock >> incomingBackwardBranches [
+	^ incomingBackwardBranches
+]
+
+{ #category : #accessing }
 CEBlock >> incrementIncomingBackwardBranches [
 	
 	incomingBackwardBranches := incomingBackwardBranches + 1
