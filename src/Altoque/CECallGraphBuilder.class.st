@@ -368,6 +368,15 @@ CECallGraphBuilder >> pushConstant: anInteger [
 ]
 
 { #category : #'instruction decoding' }
+CECallGraphBuilder >> pushLiteralVariable: aLiteralVariable [
+	
+	| instruction |
+	instruction := CELiteralVariableOperator value: aLiteralVariable.
+	self append: instruction.
+	self push: instruction.
+]
+
+{ #category : #'instruction decoding' }
 CECallGraphBuilder >> pushReceiver [
 
 	self push: self selfOperand
