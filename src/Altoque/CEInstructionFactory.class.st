@@ -46,6 +46,7 @@ CEInstructionFactory >> newBlockBeginWithBytecodeIndex: anInteger [
 CEInstructionFactory >> newLoad: aLocal [
 	
 	^ CELoadLocal new
+		bytecodeIndex: aLocal bytecodeIndex;
 		instructionID: self allocateInstructionID;
 		index: aLocal index;
 		yourself

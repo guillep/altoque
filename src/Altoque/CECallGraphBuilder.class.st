@@ -271,7 +271,7 @@ CECallGraphBuilder >> jump: anInteger if: aBoolean [
 	instruction := CEIfOperation new
 		bytecodeIndex: bytecodeScanner pc;
 		begin: currentBlock;
-		x: self pop;
+		x: self popForUsage;
 		condition: aBoolean.
 	self append: instruction.
 	self push: instruction.
@@ -318,7 +318,7 @@ CECallGraphBuilder >> methodReturnReceiver [
 { #category : #'instruction decoding' }
 CECallGraphBuilder >> methodReturnTop [
 	
-	self return: self pop
+	self return: self popForUsage
 ]
 
 { #category : #accessing }
@@ -334,10 +334,13 @@ CECallGraphBuilder >> pop [
 ]
 
 { #category : #'stack-management' }
-CECallGraphBuilder >> pop: aNumberOfElements [
-	
-	^ Array streamContents: [ :stream |
-		aNumberOfElements timesRepeat: [ stream nextPut: self pop ] ]
+CECallGraphBuilder >> popForUsage [
+
+	| poppedValue |
+	poppedValue := self pop.
+	^ poppedValue isArgument
+		ifTrue: [ self append: (instructionFactory newLoad: poppedValue) ]
+		ifFalse: [ poppedValue ]
 ]
 
 { #category : #'instruction decoding' }
@@ -396,12 +399,13 @@ CECallGraphBuilder >> selfOperand [
 ]
 
 { #category : #'instruction decoding' }
-CECallGraphBuilder >> send: aString super: aBoolean numArgs: anInteger [ 
+CECallGraphBuilder >> send: aString super: aBoolean numArgs: aNumberOfArguments [ 
 	
 	| receiver arguments instruction |
 	self assert: aBoolean not.
-	arguments := self pop: anInteger.
-	receiver := self pop.
+	arguments := Array streamContents: [ :stream |
+		aNumberOfArguments timesRepeat: [ stream nextPut: self popForUsage ] ].
+	receiver := self popForUsage.
 	instruction := CESendOperation receiver: receiver selector: aString arguments: arguments.
 	
 	self append: instruction.
