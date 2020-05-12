@@ -148,15 +148,17 @@ CEControlFlowGraphBuilderTest >> testBackwardsJumpAppendsGotoWithJumpTarget [
 { #category : #tests }
 CEControlFlowGraphBuilderTest >> testBlocHasAsManyArgumentsAsMethod [
 
-	| block |
+	| block builder |
 	block := CEBlock new.
 	block incrementIncomingBackwardBranches.
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CEControlFlowGraphBuilder new
-		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
-		initializeBlockArguments: block.
+	builder := CEControlFlowGraphBuilder new.
+	builder initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2.
+	builder
+		depthFirstSearchStartingAt: block
+		doing: [ :pred :sux | builder mergeTemporariesOfBlock: sux from: pred ].
 	self assert: block locals size equals: 2
 ]
 
@@ -310,16 +312,45 @@ CEControlFlowGraphBuilderTest >> testForwardJumpAppendsBlockEndInstruction [
 { #category : #tests }
 CEControlFlowGraphBuilderTest >> testInitializeLoopHeaderBlocArgumentsHasPhiFunctions [
 
-	| block |
+	| block builder |
 	block := CEBlock new.
 	block incrementIncomingBackwardBranches.
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CEControlFlowGraphBuilder new
-		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
-		initializeBlockArguments: block.
+	builder := CEControlFlowGraphBuilder new.
+	builder initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2.
+	builder
+		depthFirstSearchStartingAt: block
+		doing: [ :pred :sux | builder mergeTemporariesOfBlock: sux from: pred ].
 	self assert: (block locals allSatisfy: [ :e | e isPhi ])
+]
+
+{ #category : #tests }
+CEControlFlowGraphBuilderTest >> testPhiFunctionWithNonLoadedArgumentShouldLoadInExistingImmediateDominator [
+
+	| block thePredecessor builder |
+	thePredecessor := CEBlock new.
+	
+	block := CEBlock new.
+	block incrementIncomingBackwardBranches.
+	block addSuccessor: block.
+	block addPredecessor: block.
+	
+	thePredecessor addSuccessor: block.
+	block addPredecessor: thePredecessor.
+
+	thePredecessor firstInstruction: (CEJumpOperation new jumpTarget: block).
+	block firstInstruction: (CEJumpOperation new jumpTarget: block).
+
+	builder := CEControlFlowGraphBuilder new.
+	builder initializeMethodTemporaryArrayWithArguments: 1 andTemps: 1.
+	builder
+		depthFirstSearchStartingAt: block
+		doing: [ :pred :sux | builder mergeTemporariesOfBlock: sux from: pred ].
+
+	self assert: thePredecessor firstInstruction next isLoadLocal.
+	self assert: thePredecessor firstInstruction next index equals: 1.
 ]
 
 { #category : #'test-pusharguments' }

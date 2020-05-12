@@ -97,7 +97,8 @@ CEControlFlowGraphBuilder >> buildDominatorTreeFrom: aCEBlock [
 
 	self
 		depthFirstSearchStartingAt: aCEBlock
-		doing: [ :pred :sux | self calculateDominatorBetween: sux andPredecessor: pred ]
+		doing: [ :pred :sux | 
+			self calculateDominatorBetween: sux andPredecessor: pred ]
 ]
 
 { #category : #building }
@@ -150,7 +151,7 @@ CEControlFlowGraphBuilder >> commonDominatorBetween: path1 and: path2 [
 		path2Dominator := path2Dominator dominator ].
 ]
 
-{ #category : #'dominator-tree' }
+{ #category : #building }
 CEControlFlowGraphBuilder >> depthFirstSearchFrom: predecessor to: successor doing: aBlockClosure [
 
 	| predecessorsNotVisited |
@@ -164,7 +165,7 @@ CEControlFlowGraphBuilder >> depthFirstSearchFrom: predecessor to: successor doi
 	self depthFirstSearchStartingAt: successor doing: aBlockClosure
 ]
 
-{ #category : #'dominator-tree' }
+{ #category : #building }
 CEControlFlowGraphBuilder >> depthFirstSearchStartingAt: aCEBlock doing: aBlock [
 
 	aCEBlock successors do: [ :s | 
@@ -231,17 +232,8 @@ CEControlFlowGraphBuilder >> initialize [
 { #category : #'block-building' }
 CEControlFlowGraphBuilder >> initializeBlockArguments: aBlock [
 
-	aBlock isLoopHeader
-		ifTrue: [ 
-			"Should initialize the temporary frame with phi functions"
-			temporaryArray := temporaryArray collect: [ :e |
-				instructionFactory newPhiFunctionWith: e  ].
-			aBlock locals: temporaryArray copy. ]
-		ifFalse: [
-			aBlock predecessors size > 1 ifTrue: [ 
-				"Normal join point"
-				self mergeTemporariesOf: currentBlock predecessors.
-				aBlock locals: temporaryArray copy ] ].
+	aBlock predecessors size > 1 ifTrue: [
+		aBlock locals: temporaryArray copy ].
 ]
 
 { #category : #building }
@@ -299,17 +291,26 @@ CEControlFlowGraphBuilder >> jump: anInteger if: aBoolean [
 	anInteger < 0 ifTrue: [ instruction beBackwardsBranch ]
 ]
 
-{ #category : #building }
-CEControlFlowGraphBuilder >> mergeTemporariesOf: aCollection [
-	
-	| arrayOfPredecessors |
-	aCollection size > 2 ifTrue: [ self halt ].
-	arrayOfPredecessors := aCollection asArray.
-	self assert: arrayOfPredecessors first locals ~= arrayOfPredecessors second locals.
+{ #category : #temporariesArray }
+CEControlFlowGraphBuilder >> mergeTemporariesOfBlock: aBlock from: aPredecessor [
 
-	^ (arrayOfPredecessors first locals ifNil: [ temporaryArray ])
-		with: (arrayOfPredecessors second locals ifNil: [ temporaryArray ])
-		collect: [ :a :b | instructionFactory newPhiFunctionWith: a with: b ]
+	"We generate phi functions in loop headers for all variables in advance.
+	Otherwise all variables in the loop could be subject to a rename when the backward branch is visited"
+	aBlock isLoopHeader ifTrue: [ 
+		aBlock locals: (temporaryArray collect: [ :temp | (instructionFactory newPhiFunctionWith: temp) ]) ].
+
+	"If a block has only one predecessor, no merge is necessary and no state array is stored for this block."
+	aBlock predecessors size <= 1 ifTrue: [ ^ self ].
+	
+	"If a block with at least 2 predecessors is visited for the first time the incoming state array is stored in this block."
+	aBlock locals ifNil: [ ^ aBlock locals: aPredecessor locals ].
+	
+	"If it is visited again, the new state array is compared with the stored state array element by
+element, and phi functions are generated or updated for each different value"
+	aBlock locals: (aBlock locals with: aPredecessor locals collect: [ :a :b |
+		a = b
+			ifTrue: [ a ]
+			ifFalse: [ instructionFactory newPhiFunctionWith: a with: b ] ]).
 ]
 
 { #category : #accessing }
@@ -449,6 +450,4 @@ CEControlFlowGraphBuilder >> setBlock: aBlock [
 		newBlockBeginWithBytecodeIndex: currentBlock bytecodeIndex.
 	currentBlock firstInstruction: currentInstruction.
 	operandStack := Stack new.
-	
-	self initializeBlockArguments: currentBlock
 ]
