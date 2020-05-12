@@ -1,5 +1,5 @@
 Class {
-	#name : #CECallGraphBuilderTest,
+	#name : #CEControlFlowGraphBuilderTest,
 	#superclass : #TestCase,
 	#instVars : [
 		'pc'
@@ -8,12 +8,12 @@ Class {
 }
 
 { #category : #helpers }
-CECallGraphBuilderTest >> pc [
+CEControlFlowGraphBuilderTest >> pc [
 	^ pc
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testBackwardsConditionalJumpAppendsBlockEndInstruction [
+CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsBlockEndInstruction [
 
 	| block builder |
 	block := CEBlock new.
@@ -21,7 +21,7 @@ CECallGraphBuilderTest >> testBackwardsConditionalJumpAppendsBlockEndInstruction
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -37,7 +37,7 @@ CECallGraphBuilderTest >> testBackwardsConditionalJumpAppendsBlockEndInstruction
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithFallthroughJumpTarget [
+CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithFallthroughJumpTarget [
 
 	| block1 builder block2 |
 	block1 := CEBlock new.
@@ -52,7 +52,7 @@ CECallGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithFallthroughJu
 	block1 addSuccessor: block2.
 	block2 addPredecessor: block1.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block1 . block2 };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -71,7 +71,7 @@ CECallGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithFallthroughJu
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithJumpTarget [
+CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithJumpTarget [
 
 	| block builder |
 	block := CEBlock new.
@@ -79,7 +79,7 @@ CECallGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithJumpTarget [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -95,7 +95,7 @@ CECallGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithJumpTarget [
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testBackwardsJumpAppendsBlockEndInstruction [
+CEControlFlowGraphBuilderTest >> testBackwardsJumpAppendsBlockEndInstruction [
 
 	| block builder |
 	block := CEBlock new.
@@ -103,7 +103,7 @@ CECallGraphBuilderTest >> testBackwardsJumpAppendsBlockEndInstruction [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -118,7 +118,7 @@ CECallGraphBuilderTest >> testBackwardsJumpAppendsBlockEndInstruction [
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testBackwardsJumpAppendsGotoWithJumpTarget [
+CEControlFlowGraphBuilderTest >> testBackwardsJumpAppendsGotoWithJumpTarget [
 
 	| block builder |
 	block := CEBlock new.
@@ -126,7 +126,7 @@ CECallGraphBuilderTest >> testBackwardsJumpAppendsGotoWithJumpTarget [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -141,7 +141,7 @@ CECallGraphBuilderTest >> testBackwardsJumpAppendsGotoWithJumpTarget [
 ]
 
 { #category : #tests }
-CECallGraphBuilderTest >> testBlocHasAsManyArgumentsAsMethod [
+CEControlFlowGraphBuilderTest >> testBlocHasAsManyArgumentsAsMethod [
 
 	| block |
 	block := CEBlock new.
@@ -149,14 +149,14 @@ CECallGraphBuilderTest >> testBlocHasAsManyArgumentsAsMethod [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CECallGraphBuilder new
+	CEControlFlowGraphBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		initializeBlockArguments: block.
 	self assert: block locals size equals: 2
 ]
 
 { #category : #tests }
-CECallGraphBuilderTest >> testBlockWithOneIncomingBackwardBranchIsLoopHeader [
+CEControlFlowGraphBuilderTest >> testBlockWithOneIncomingBackwardBranchIsLoopHeader [
 
 	| block |
 	block := CEBlock new.
@@ -168,7 +168,7 @@ CECallGraphBuilderTest >> testBlockWithOneIncomingBackwardBranchIsLoopHeader [
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testForwardConditionalJumpAppendsBlockEndInstruction [
+CEControlFlowGraphBuilderTest >> testForwardConditionalJumpAppendsBlockEndInstruction [
 
 	| builder block1 targetBlock fallthroughBlock |
 	block1 := CEBlock new.
@@ -179,7 +179,7 @@ CECallGraphBuilderTest >> testForwardConditionalJumpAppendsBlockEndInstruction [
 	block1 addSuccessor: fallthroughBlock.
 	fallthroughBlock addPredecessor: block1.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block1 . targetBlock . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -197,7 +197,7 @@ CECallGraphBuilderTest >> testForwardConditionalJumpAppendsBlockEndInstruction [
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithFallthroughJumpTarget [
+CEControlFlowGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithFallthroughJumpTarget [
 
 	| builder block1 targetBlock fallthroughBlock |
 	block1 := CEBlock new.
@@ -208,7 +208,7 @@ CECallGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithFallthroughJump
 	block1 addSuccessor: fallthroughBlock.
 	fallthroughBlock addPredecessor: block1.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block1 . targetBlock . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -226,7 +226,7 @@ CECallGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithFallthroughJump
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithJumpTarget [
+CEControlFlowGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithJumpTarget [
 
 	| builder block1 targetBlock fallthroughBlock |
 	block1 := CEBlock new.
@@ -237,7 +237,7 @@ CECallGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithJumpTarget [
 	block1 addSuccessor: fallthroughBlock.
 	fallthroughBlock addPredecessor: block1.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block1 . targetBlock . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -255,7 +255,7 @@ CECallGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithJumpTarget [
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testForwardJumpAppendsAppendsGotoWithJumpTarget [
+CEControlFlowGraphBuilderTest >> testForwardJumpAppendsAppendsGotoWithJumpTarget [
 
 	| builder block1 block2 |
 	block1 := CEBlock new.
@@ -263,7 +263,7 @@ CECallGraphBuilderTest >> testForwardJumpAppendsAppendsGotoWithJumpTarget [
 	block1 addSuccessor: block2.
 	block2 addPredecessor: block1.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block1 . block2 };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -279,7 +279,7 @@ CECallGraphBuilderTest >> testForwardJumpAppendsAppendsGotoWithJumpTarget [
 ]
 
 { #category : #'tests-branchinstructions' }
-CECallGraphBuilderTest >> testForwardJumpAppendsBlockEndInstruction [
+CEControlFlowGraphBuilderTest >> testForwardJumpAppendsBlockEndInstruction [
 
 	| builder block1 block2 |
 	block1 := CEBlock new.
@@ -287,7 +287,7 @@ CECallGraphBuilderTest >> testForwardJumpAppendsBlockEndInstruction [
 	block1 addSuccessor: block2.
 	block2 addPredecessor: block1.
 
-	builder := CECallGraphBuilder new
+	builder := CEControlFlowGraphBuilder new
 		blockList: { block1 . block2 };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -303,7 +303,7 @@ CECallGraphBuilderTest >> testForwardJumpAppendsBlockEndInstruction [
 ]
 
 { #category : #tests }
-CECallGraphBuilderTest >> testInitializeLoopHeaderBlocArgumentsHasPhiFunctions [
+CEControlFlowGraphBuilderTest >> testInitializeLoopHeaderBlocArgumentsHasPhiFunctions [
 
 	| block |
 	block := CEBlock new.
@@ -311,14 +311,14 @@ CECallGraphBuilderTest >> testInitializeLoopHeaderBlocArgumentsHasPhiFunctions [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CECallGraphBuilder new
+	CEControlFlowGraphBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		initializeBlockArguments: block.
 	self assert: (block locals allSatisfy: [ :e | e isPhi ])
 ]
 
 { #category : #'tests-pushinstructions' }
-CECallGraphBuilderTest >> testPushConstantAppendsConstantInstruction [
+CEControlFlowGraphBuilderTest >> testPushConstantAppendsConstantInstruction [
 
 	| block |
 	block := CEBlock new.
@@ -326,7 +326,7 @@ CECallGraphBuilderTest >> testPushConstantAppendsConstantInstruction [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CECallGraphBuilder new
+	CEControlFlowGraphBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		pushConstant: 17.
@@ -336,7 +336,7 @@ CECallGraphBuilderTest >> testPushConstantAppendsConstantInstruction [
 ]
 
 { #category : #'tests-pushinstructions' }
-CECallGraphBuilderTest >> testPushLiteralAppendsLiteralInstruction [
+CEControlFlowGraphBuilderTest >> testPushLiteralAppendsLiteralInstruction [
 
 	| block literal |
 	block := CEBlock new.
@@ -345,7 +345,7 @@ CECallGraphBuilderTest >> testPushLiteralAppendsLiteralInstruction [
 	block addPredecessor: block.
 
 	literal := #Global -> 17.
-	CECallGraphBuilder new
+	CEControlFlowGraphBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		pushLiteralVariable: literal.
@@ -355,7 +355,7 @@ CECallGraphBuilderTest >> testPushLiteralAppendsLiteralInstruction [
 ]
 
 { #category : #'tests-pushinstructions' }
-CECallGraphBuilderTest >> testPushReceiverDoesNotAppendReceiverInstruction [
+CEControlFlowGraphBuilderTest >> testPushReceiverDoesNotAppendReceiverInstruction [
 
 	| block |
 	block := CEBlock new.
@@ -363,7 +363,7 @@ CECallGraphBuilderTest >> testPushReceiverDoesNotAppendReceiverInstruction [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CECallGraphBuilder new
+	CEControlFlowGraphBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		pushReceiver.
@@ -372,12 +372,12 @@ CECallGraphBuilderTest >> testPushReceiverDoesNotAppendReceiverInstruction [
 ]
 
 { #category : #'test-sendInstructions' }
-CECallGraphBuilderTest >> testSendBinaryAppendsSendInstruction [
+CEControlFlowGraphBuilderTest >> testSendBinaryAppendsSendInstruction [
 
 	| block |
 	block := CEBlock new.
 
-	CECallGraphBuilder new
+	CEControlFlowGraphBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -389,12 +389,12 @@ CECallGraphBuilderTest >> testSendBinaryAppendsSendInstruction [
 ]
 
 { #category : #'test-sendInstructions' }
-CECallGraphBuilderTest >> testSendKeywordAppendsSendInstruction [
+CEControlFlowGraphBuilderTest >> testSendKeywordAppendsSendInstruction [
 
 	| block |
 	block := CEBlock new.
 
-	CECallGraphBuilder new
+	CEControlFlowGraphBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -406,12 +406,12 @@ CECallGraphBuilderTest >> testSendKeywordAppendsSendInstruction [
 ]
 
 { #category : #'test-sendInstructions' }
-CECallGraphBuilderTest >> testSendUnaryAppendsSendInstruction [
+CEControlFlowGraphBuilderTest >> testSendUnaryAppendsSendInstruction [
 
 	| block |
 	block := CEBlock new.
 
-	CECallGraphBuilder new
+	CEControlFlowGraphBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
