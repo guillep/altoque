@@ -2,7 +2,8 @@ Class {
 	#name : #CEArgumentOperation,
 	#superclass : #CEHIROperation,
 	#instVars : [
-		'index'
+		'index',
+		'loadInstruction'
 	],
 	#category : #'Altoque-High-Level-IR'
 }
@@ -34,4 +35,21 @@ CEArgumentOperation >> instructionID [
 CEArgumentOperation >> isArgument [
 	
 	^ true
+]
+
+{ #category : #testing }
+CEArgumentOperation >> isLoaded [
+	
+	^ loadInstruction notNil
+]
+
+{ #category : #accessing }
+CEArgumentOperation >> loadInstruction [
+	
+	^ loadInstruction
+]
+
+{ #category : #accessing }
+CEArgumentOperation >> loadInstruction: aCELoadLocal [ 
+	loadInstruction := aCELoadLocal
 ]

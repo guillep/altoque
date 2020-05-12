@@ -347,11 +347,15 @@ CEControlFlowGraphBuilder >> pop [
 { #category : #'stack-management' }
 CEControlFlowGraphBuilder >> popForUsage [
 
-	| poppedValue |
+	| poppedValue loadInstruction |
 	poppedValue := self pop.
-	^ poppedValue isArgument
-		ifTrue: [ self append: (instructionFactory newLoad: poppedValue) ]
-		ifFalse: [ poppedValue ]
+	poppedValue isArgument ifFalse: [ ^ poppedValue ].
+	poppedValue isLoaded ifTrue: [ ^ poppedValue loadInstruction ].
+	
+	loadInstruction := instructionFactory newLoad: poppedValue.
+	poppedValue loadInstruction: loadInstruction.
+	self append: loadInstruction.
+	^ loadInstruction
 ]
 
 { #category : #'instruction decoding' }

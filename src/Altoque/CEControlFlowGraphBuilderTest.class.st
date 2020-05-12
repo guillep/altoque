@@ -359,6 +359,57 @@ CEControlFlowGraphBuilderTest >> testPushLiteralAppendsLiteralInstruction [
 	self assert: block firstInstruction next value equals: literal.
 ]
 
+{ #category : #'test-pusharguments' }
+CEControlFlowGraphBuilderTest >> testPushReceiverAppendsLoadLocalInstructionOnUse [
+
+	| block |
+	block := CEBlock new.
+
+	CEControlFlowGraphBuilder new
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
+		setBlock: block;
+		"Receiver, then send"
+		pushReceiver;
+		send: #unary super: false numArgs: 0.
+		
+	self assert: block firstInstruction next isLoadLocal
+]
+
+{ #category : #'test-pusharguments' }
+CEControlFlowGraphBuilderTest >> testPushReceiverAppendsLoadLocalInstructionOnUseWithReceiverIndex [
+
+	| block |
+	block := CEBlock new.
+
+	CEControlFlowGraphBuilder new
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
+		setBlock: block;
+		"Receiver, then send"
+		pushReceiver;
+		send: #unary super: false numArgs: 0.
+		
+	self assert: block firstInstruction next isSelf
+]
+
+{ #category : #'test-pusharguments' }
+CEControlFlowGraphBuilderTest >> testPushReceiverAppendsLoadLocalInstructionOnlyOnFirstUse [
+
+	| block messageSend |
+	block := CEBlock new.
+
+	CEControlFlowGraphBuilder new
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
+		setBlock: block;
+		"Receiver, then send"
+		pushReceiver;
+		pushReceiver;
+		send: #keyword: super: false numArgs: 1.
+		
+	self assert: block firstInstruction next isLoadLocal.
+	messageSend := block firstInstruction next next.
+	self assert: messageSend receiver equals: messageSend arguments first
+]
+
 { #category : #'tests-pushinstructions' }
 CEControlFlowGraphBuilderTest >> testPushReceiverDoesNotAppendReceiverInstruction [
 

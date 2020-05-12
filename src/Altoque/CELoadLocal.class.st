@@ -24,3 +24,15 @@ CELoadLocal >> index [
 CELoadLocal >> index: anObject [
 	index := anObject
 ]
+
+{ #category : #testing }
+CELoadLocal >> isLoadLocal [
+	
+	^ true
+]
+
+{ #category : #testing }
+CELoadLocal >> isSelf [
+
+	^ index isNil
+]
