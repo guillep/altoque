@@ -15,20 +15,25 @@ CEControlFlowGraphBuilderTest >> pc [
 { #category : #'tests-branchinstructions' }
 CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsBlockEndInstruction [
 
-	| block builder |
+	| block builder fallthroughBlock |
+	"Target of itself"
 	block := CEBlock new.
+	fallthroughBlock := CEBlock new.
 	block incrementIncomingBackwardBranches.
 	block addSuccessor: block.
 	block addPredecessor: block.
+	block addSuccessor: fallthroughBlock.
+	fallthroughBlock addPredecessor: block.
 
 	builder := CEControlFlowGraphBuilder new
-		blockList: { block };
+		blockList: { block . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block.
 	
 	"We jump to the same point."
 	block bytecodeIndex: 0.
+	fallthroughBlock bytecodeIndex: 1.
 	pc := 1.
 	builder pushConstant: true.
 	builder jump: -1 if: true.
@@ -39,54 +44,54 @@ CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsBlockEndInst
 { #category : #'tests-branchinstructions' }
 CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithFallthroughJumpTarget [
 
-	| block1 builder block2 |
-	block1 := CEBlock new.
-	block2 := CEBlock new.
-	
-	"The backwards jump"
-	block1 incrementIncomingBackwardBranches.
-	block1 addSuccessor: block1.
-	block1 addPredecessor: block1.
-	
-	"The fallthrough block"
-	block1 addSuccessor: block2.
-	block2 addPredecessor: block1.
-
-	builder := CEControlFlowGraphBuilder new
-		blockList: { block1 . block2 };
-		bytecodeScanner: self;
-		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
-		setBlock: block1.
-	
-	"We jump to the same point."
-	block1 bytecodeIndex: 0.
-	block2 bytecodeIndex: 1.
-	builder pushConstant: true.
-	
-	"The pc after the jump instruction"
-	pc := block2 bytecodeIndex.
-	builder jump: -1 if: true.
-		
-	self assert: block1 lastInstruction falseConditionJumpTarget equals: block2
-]
-
-{ #category : #'tests-branchinstructions' }
-CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithJumpTarget [
-
-	| block builder |
+	| block builder fallthroughBlock |
+	"Target of itself"
 	block := CEBlock new.
+	fallthroughBlock := CEBlock new.
 	block incrementIncomingBackwardBranches.
 	block addSuccessor: block.
 	block addPredecessor: block.
+	block addSuccessor: fallthroughBlock.
+	fallthroughBlock addPredecessor: block.
 
 	builder := CEControlFlowGraphBuilder new
-		blockList: { block };
+		blockList: { block . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block.
 	
 	"We jump to the same point."
 	block bytecodeIndex: 0.
+	fallthroughBlock bytecodeIndex: 1.
+	pc := 1.
+	builder pushConstant: true.
+	builder jump: -1 if: true.
+		
+	self assert: block lastInstruction falseConditionJumpTarget equals: fallthroughBlock
+]
+
+{ #category : #'tests-branchinstructions' }
+CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithJumpTarget [
+
+	| block builder fallthroughBlock |
+	"Target of itself"
+	block := CEBlock new.
+	fallthroughBlock := CEBlock new.
+	block incrementIncomingBackwardBranches.
+	block addSuccessor: block.
+	block addPredecessor: block.
+	block addSuccessor: fallthroughBlock.
+	fallthroughBlock addPredecessor: block.
+
+	builder := CEControlFlowGraphBuilder new
+		blockList: { block . fallthroughBlock };
+		bytecodeScanner: self;
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
+		setBlock: block.
+	
+	"We jump to the same point."
+	block bytecodeIndex: 0.
+	fallthroughBlock bytecodeIndex: 1.
 	pc := 1.
 	builder pushConstant: true.
 	builder jump: -1 if: true.
