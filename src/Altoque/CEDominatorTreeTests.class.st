@@ -10,21 +10,21 @@ Class {
 }
 
 { #category : #helpers }
-CEDominatorTreeTests >> assert: aCEBlock dominates: aCEBlock2 [ 
+CEDominatorTreeTests >> assert: aCEBlock dominatesBlock: id [
+	
+	self assert: aCEBlock strictlyDominates: (blocks at: id)
+]
+
+{ #category : #helpers }
+CEDominatorTreeTests >> assert: aCEBlock strictlyDominates: aCEBlock2 [ 
 	
 	self assert: aCEBlock2 dominator equals: aCEBlock
 ]
 
 { #category : #helpers }
-CEDominatorTreeTests >> assert: aCEBlock dominatesBlock: id [
+CEDominatorTreeTests >> assertBlock: id1 strictlyDominatesBlock: id2 [
 	
-	self assert: aCEBlock dominates: (blocks at: id)
-]
-
-{ #category : #helpers }
-CEDominatorTreeTests >> assertBlock: id1 dominatesBlock: id2 [
-	
-	self assert: (blocks at: id1) dominates: (blocks at: id2)
+	self assert: (blocks at: id1) strictlyDominates: (blocks at: id2)
 ]
 
 { #category : #helpers }
@@ -68,67 +68,67 @@ CEDominatorTreeTests >> setUp [
 { #category : #tests }
 CEDominatorTreeTests >> test11Dominates12 [
 
-	self assertBlock: 11 dominatesBlock: 12
+	self assertBlock: 11 strictlyDominatesBlock: 12
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test1Dominates2 [
 
-	self assertBlock: 1 dominatesBlock: 2
+	self assertBlock: 1 strictlyDominatesBlock: 2
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test2Dominates3 [
 
-	self assertBlock: 2 dominatesBlock: 3
+	self assertBlock: 2 strictlyDominatesBlock: 3
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test2Dominates7 [
 
-	self assertBlock: 2 dominatesBlock: 7
+	self assertBlock: 2 strictlyDominatesBlock: 7
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test2Dominates8 [
 
-	self assertBlock: 2 dominatesBlock: 8
+	self assertBlock: 2 strictlyDominatesBlock: 8
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test3Dominates4 [
 
-	self assertBlock: 3 dominatesBlock: 4
+	self assertBlock: 3 strictlyDominatesBlock: 4
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test3Dominates5 [
 
-	self assertBlock: 3 dominatesBlock: 5
+	self assertBlock: 3 strictlyDominatesBlock: 5
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test3Dominates6 [
 
-	self assertBlock: 3 dominatesBlock: 6
+	self assertBlock: 3 strictlyDominatesBlock: 6
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test8Dominates9 [
 
-	self assertBlock: 8 dominatesBlock: 9
+	self assertBlock: 8 strictlyDominatesBlock: 9
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test9Dominates10 [
 
-	self assertBlock: 9 dominatesBlock: 10
+	self assertBlock: 9 strictlyDominatesBlock: 10
 ]
 
 { #category : #tests }
 CEDominatorTreeTests >> test9Dominates11 [
 
-	self assertBlock: 9 dominatesBlock: 11
+	self assertBlock: 9 strictlyDominatesBlock: 11
 ]
 
 { #category : #tests }
@@ -140,5 +140,13 @@ CEDominatorTreeTests >> testEntryDominates1 [
 { #category : #tests }
 CEDominatorTreeTests >> testEntryDominatesExit [
 
-	self assert: entry dominates: exit
+	self assert: entry strictlyDominates: exit
+]
+
+{ #category : #tests }
+CEDominatorTreeTests >> testReflexivity [
+
+	1 to: 12 do: [ :i |
+		self assert: ((blocks at: i) dominates: (blocks at: i)) ]
+	
 ]

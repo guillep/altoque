@@ -168,8 +168,11 @@ CEControlFlowGraphBuilder >> depthFirstSearchFrom: predecessor to: successor doi
 { #category : #building }
 CEControlFlowGraphBuilder >> depthFirstSearchStartingAt: aCEBlock doing: aBlock [
 
-	aCEBlock successors do: [ :s | 
-		self depthFirstSearchFrom: aCEBlock to: s doing: aBlock ]
+	"Iterate the successors using a to:do: loop because the successor collection can be modified in the middle.
+	Specially when phi-functions are manipulated, extra blocks can be created"
+	1 to: aCEBlock successors size do: [ :i | | successor |
+		successor := aCEBlock successors at: i.
+		self depthFirstSearchFrom: aCEBlock to: successor doing: aBlock ]
 ]
 
 { #category : #building }
@@ -313,19 +316,49 @@ CEControlFlowGraphBuilder >> mergeTemporariesOfBlock: aBlock from: aPredecessor 
 		aBlock locals: ((1 to: temporaryArray size) collect: [ :temp | instructionFactory newPhiFunction ]) ].
 
 	"If a block has only one predecessor, no merge is necessary and no state array is stored for this block."
-	aBlock predecessors size <= 1 ifTrue: [ ^ self ].
+	aBlock predecessors size <= 1 ifTrue: [ ^ aBlock locals: temporaryArray ].
 	
 	"If a block with at least 2 predecessors is visited for the first time the incoming state array is stored in this block."
-	aBlock locals ifNil: [ ^ aBlock locals: aPredecessor locals ].
+	aBlock locals ifNil: [ ^ aBlock locals: aPredecessor locals copy ].
 	
 	"If it is visited again, the new state array is compared with the stored state array element by
 element, and phi functions are generated or updated for each different value"
 	aBlock locals: (aBlock locals with: aPredecessor locals collect: [ :a :b |
-		a isArgument ifTrue: [ self halt ].
-		b isArgument ifTrue: [ aPredecessor appendBeforeEnd: (self loadInstructionForArgument: b) ].
 		a = b
 			ifTrue: [ a ]
-			ifFalse: [ instructionFactory newPhiFunctionWith: a with: b ] ]).
+			ifFalse: [ | arga argb |
+				arga := a isArgument ifTrue: [ | blockToAppendTo |
+					blockToAppendTo := (aBlock dominator = (aBlock predecessors at: 1) and: [ 
+						aBlock predecessors anySatisfy: [ :otherPredecessor |
+							otherPredecessor ~= (aBlock predecessors at: 1)  and: [ (aBlock dominates: otherPredecessor) not ] ] ])
+								ifTrue: [ "Should append a new block between aBlock and aPredecessor"
+									| newBlock |
+									newBlock := CEBlock new.
+									(aBlock predecessors at: 1)  replaceSuccessor: aBlock by: newBlock.
+									aBlock replacePredecessor: (aBlock predecessors at: 1)  by: newBlock.
+									newBlock addPredecessor: (aBlock predecessors at: 1) .
+									newBlock addSuccessor: aBlock.
+									newBlock firstInstruction: (CEJumpOperation new jumpTarget: aBlock) ]
+								ifFalse: [ aPredecessor ].
+						blockToAppendTo appendBeforeEnd: (self loadInstructionForArgument: a) ]
+					ifFalse: [a].
+				argb := b isArgument ifTrue: [ | blockToAppendTo |
+					blockToAppendTo := (aBlock dominator = aPredecessor and: [ 
+						aBlock predecessors anySatisfy: [ :otherPredecessor |
+							otherPredecessor ~= aPredecessor and: [ (aBlock dominates: otherPredecessor) not ] ] ])
+								ifTrue: [ "Should append a new block between aBlock and aPredecessor"
+									| newBlock |
+									newBlock := CEBlock new.
+									1halt.
+									aPredecessor replaceSuccessor: aBlock by: newBlock.
+									aBlock replacePredecessor: aPredecessor by: newBlock.
+									newBlock addPredecessor: aPredecessor.
+									newBlock addSuccessor: aBlock.
+									newBlock firstInstruction: (CEJumpOperation new jumpTarget: aBlock) ]
+								ifFalse: [ aPredecessor ].
+					blockToAppendTo appendBeforeEnd: (self loadInstructionForArgument: b) ]
+					ifFalse: [b].
+			instructionFactory newPhiFunctionWith: arga with: argb ] ]).
 ]
 
 { #category : #accessing }

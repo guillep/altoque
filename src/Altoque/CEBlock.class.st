@@ -27,9 +27,10 @@ CEBlock >> addSuccessor: aBlock [
 ]
 
 { #category : #appending }
-CEBlock >> appendBeforeEnd: aCELoadLocal [ 
+CEBlock >> appendBeforeEnd: aCELoadLocal [
 	
-	firstInstruction isBlockEnd ifFalse: [ self halt ].
+	firstInstruction isBlockEnd ifFalse: [ 
+		^ firstInstruction appendBeforeEnd: aCELoadLocal ].
 	aCELoadLocal next: firstInstruction.
 	firstInstruction := aCELoadLocal
 ]
@@ -48,6 +49,15 @@ CEBlock >> bytecodeIndex [
 { #category : #accessing }
 CEBlock >> bytecodeIndex: anObject [
 	bytecodeIndex := anObject
+]
+
+{ #category : #'dominator-tree' }
+CEBlock >> dominates: aCEBlock [
+	
+	aCEBlock == self ifTrue: [ ^ true ].
+	aCEBlock dominator == self ifTrue: [ ^ true ].
+	aCEBlock dominator ifNil: [ ^ false ].
+	^ self dominates: aCEBlock dominator
 ]
 
 { #category : #'dominator-tree' }
@@ -160,6 +170,24 @@ CEBlock >> predecessor [
 { #category : #accessing }
 CEBlock >> predecessors [
 	^ predecessors
+]
+
+{ #category : #accessing }
+CEBlock >> replacePredecessor: aCEBlock by: aCEBlock2 [ 
+	
+	| index |
+	index := predecessors indexOf: aCEBlock.
+	predecessors at: index put: aCEBlock2.
+]
+
+{ #category : #accessing }
+CEBlock >> replaceSuccessor: aCEBlock by: aCEBlock2 [
+	
+	| index |
+	index := successors indexOf: aCEBlock.
+	successors at: index put: aCEBlock2.
+	
+	self end replaceSuccessor: aCEBlock by: aCEBlock2
 ]
 
 { #category : #accessing }

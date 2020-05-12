@@ -17,6 +17,16 @@ CEHIROperation class >> bytecodeIndex: anInteger [
 		yourself
 ]
 
+{ #category : #appending }
+CEHIROperation >> appendBeforeEnd: anInstruction [
+	
+	next isBlockEnd ifTrue: [ 
+		anInstruction next: next.
+		next := anInstruction.
+		^ self ].
+	next appendBeforeEnd: anInstruction
+]
+
 { #category : #accessing }
 CEHIROperation >> bytecodeIndex [
 	^ bytecodeIndex

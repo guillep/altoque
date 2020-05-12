@@ -43,10 +43,26 @@ CEIfOperation >> jumpTarget: aBlock [
 	jumpTarget := aBlock
 ]
 
+{ #category : #replacing }
+CEIfOperation >> replaceSuccessor: aCEBlock by: aCEBlock2 [ 
+	
+	jumpTarget = aCEBlock ifTrue: [ 
+		^ jumpTarget := aCEBlock2 ].
+	falseConditionJumpTarget = aCEBlock ifTrue: [ 
+		^ falseConditionJumpTarget := aCEBlock2 ].
+	self error: 'Invalid successor in branch operation'
+]
+
 { #category : #accessing }
 CEIfOperation >> trueConditionJumpTarget [
 	
 	^ jumpTarget
+]
+
+{ #category : #accessing }
+CEIfOperation >> trueConditionJumpTarget: aCEBlock [ 
+	
+	jumpTarget := aCEBlock
 ]
 
 { #category : #accessing }

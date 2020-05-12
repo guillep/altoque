@@ -312,18 +312,67 @@ CEControlFlowGraphBuilderTest >> testForwardJumpAppendsBlockEndInstruction [
 { #category : #tests }
 CEControlFlowGraphBuilderTest >> testInitializeLoopHeaderBlocArgumentsHasPhiFunctions [
 
-	| block builder |
+	| block builder startBlock |
+	startBlock := CEBlock new.
+	
 	block := CEBlock new.
 	block incrementIncomingBackwardBranches.
 	block addSuccessor: block.
 	block addPredecessor: block.
+	
+	startBlock addSuccessor: block.
+	block addPredecessor: startBlock.
+	startBlock firstInstruction: CEBlockBeginOperation new.
+	startBlock firstInstruction next: (CEJumpOperation new jumpTarget: block).
+	startBlock firstInstruction end: startBlock firstInstruction next.
 
 	builder := CEControlFlowGraphBuilder new.
 	builder initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2.
+	startBlock locals: builder temporaryArray.
 	builder
-		depthFirstSearchStartingAt: block
-		doing: [ :pred :sux | builder mergeTemporariesOfBlock: sux from: pred ].
+		depthFirstSearchStartingAt: startBlock
+		doing: [ :pred :sux |
+			builder calculateDominatorBetween: sux andPredecessor: pred.
+			builder mergeTemporariesOfBlock: sux from: startBlock ].
 	self assert: (block locals allSatisfy: [ :e | e isPhi ])
+]
+
+{ #category : #tests }
+CEControlFlowGraphBuilderTest >> testPhiFunctionWithNonLoadedArgumentShouldCreateNewBlockBetweenDominatorAndBlockIfImmediateDominatorHasManyDominees [
+
+	| block theCommonPredecessor builder theNonDominatorPredecessor |
+	theCommonPredecessor := CEBlock new.
+	theNonDominatorPredecessor := CEBlock new.
+	block := CEBlock new.
+	
+	theCommonPredecessor addSuccessor: block.
+	block addPredecessor: theCommonPredecessor.
+	theCommonPredecessor addSuccessor: theNonDominatorPredecessor.
+	theNonDominatorPredecessor addPredecessor: theCommonPredecessor.
+	
+	theNonDominatorPredecessor addSuccessor: block.
+	block addPredecessor: theNonDominatorPredecessor.
+
+	theCommonPredecessor firstInstruction: (CEIfOperation new
+		falseConditionJumpTarget: block;
+		trueConditionJumpTarget: theNonDominatorPredecessor;
+		yourself).
+	theNonDominatorPredecessor firstInstruction: (CEJumpOperation new jumpTarget: block).
+
+	builder := CEControlFlowGraphBuilder new.
+	builder initializeMethodTemporaryArrayWithArguments: 1 andTemps: 1.
+	theCommonPredecessor locals: builder temporaryArray.
+	builder
+		depthFirstSearchStartingAt: theCommonPredecessor
+		doing: [ :pred :sux | 
+			builder calculateDominatorBetween: sux andPredecessor: pred.
+			builder mergeTemporariesOfBlock: sux from: pred.
+			sux = theNonDominatorPredecessor ifTrue: [ 
+				theNonDominatorPredecessor locals at: 1 put: (CEConstantOperator new value: 17) ] ].
+
+	self deny: (theCommonPredecessor successors includes: block).
+	self assert: (theCommonPredecessor successors includes: theNonDominatorPredecessor).
+	self assert: theCommonPredecessor successors size equals: 2.
 ]
 
 { #category : #tests }

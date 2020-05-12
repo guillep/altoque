@@ -24,6 +24,12 @@ CEBlockEndOperation >> begin: anObject [
 	begin := anObject
 ]
 
+{ #category : #accessing }
+CEBlockEndOperation >> end [
+	
+	^ self
+]
+
 { #category : #testing }
 CEBlockEndOperation >> hasSuccessors [
 	
@@ -48,6 +54,12 @@ CEBlockEndOperation >> isBackwardsBranch [
 CEBlockEndOperation >> isBlockEnd [
 
 	^ true
+]
+
+{ #category : #replacing }
+CEBlockEndOperation >> replaceSuccessor: aCEBlock by: aCEBlock2 [ 
+	
+	self subclassResponsibility
 ]
 
 { #category : #accessing }

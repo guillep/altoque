@@ -24,3 +24,10 @@ CEJumpOperation >> jumpTarget: aBlock [
 	
 	jumpTarget := aBlock
 ]
+
+{ #category : #replacing }
+CEJumpOperation >> replaceSuccessor: aCEBlock by: aCEBlock2 [ 
+	
+	self assert: jumpTarget = aCEBlock.
+	jumpTarget := aCEBlock2
+]
