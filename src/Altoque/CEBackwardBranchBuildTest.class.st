@@ -57,7 +57,7 @@ CEBackwardBranchBuildTest >> test1HasThreeBlocks [
 
 { #category : #'test-immediate-forward-branch' }
 CEBackwardBranchBuildTest >> test2FirstBlockBytecodeIndexIsInitialPC [
-	
+
 	self assert: blocks first bytecodeIndex equals: initialPC
 ]
 

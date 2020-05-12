@@ -9,12 +9,6 @@ Class {
 	#category : #'Altoque-High-Level-IR'
 }
 
-{ #category : #accessing }
-CEBlockEndOperation >> addSuccessor: aCEBlockBeginOperation [
-
-	successors add: aCEBlockBeginOperation
-]
-
 { #category : #initialization }
 CEBlockEndOperation >> beBackwardsBranch [
 	isBackwardsBranch := true

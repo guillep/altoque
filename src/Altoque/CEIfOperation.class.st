@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'x',
 		'condition',
-		'jumpTarget'
+		'jumpTarget',
+		'falseConditionJumpTarget'
 	],
 	#category : #'Altoque-High-Level-IR'
 }
@@ -22,13 +23,30 @@ CEIfOperation >> condition: anObject [
 { #category : #printing }
 CEIfOperation >> description [
 	
-	^ 'if t', x instructionID asString, ' = ', condition asString, ' then B', successors first blockID asString, ' else B', successors second blockID asString
+	^ 'if t', x instructionID asString, ' = ', condition asString, ' then B', jumpTarget blockID asString, ' else B???'
+]
+
+{ #category : #accessing }
+CEIfOperation >> falseConditionJumpTarget [
+	
+	^ falseConditionJumpTarget
+]
+
+{ #category : #accessing }
+CEIfOperation >> falseConditionJumpTarget: aCEBlock [ 
+	falseConditionJumpTarget := aCEBlock
 ]
 
 { #category : #accessing }
 CEIfOperation >> jumpTarget: aBlock [ 
 
 	jumpTarget := aBlock
+]
+
+{ #category : #accessing }
+CEIfOperation >> trueConditionJumpTarget [
+	
+	^ jumpTarget
 ]
 
 { #category : #accessing }

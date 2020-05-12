@@ -96,7 +96,7 @@ CEBlockListBuilder >> buildBlocksFrom: aBytecodeMethod [
 	[bytecodeScanner pc <= endPC] whileTrue: [
 		self interpretInstruction: [ bytecodeScanner interpretNextInstructionFor: self ].
 	].
-
+	self build.
 	^ self blocks
 ]
 

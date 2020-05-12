@@ -48,8 +48,9 @@ CEBlock >> dominator [
 ]
 
 { #category : #'dominator-tree' }
-CEBlock >> dominator: aCEBlockBeginOperation [ 
-	dominator := aCEBlockBeginOperation
+CEBlock >> dominator: aCEBlock [ 
+	self haltIf: [ (aCEBlock isKindOf: CEBlock) not ].
+	dominator := aCEBlock
 ]
 
 { #category : #accessing }
@@ -121,6 +122,12 @@ CEBlock >> instructionsDo: aBlockClosure [
 CEBlock >> isLoopHeader [
 
 	^ incomingBackwardBranches > 0
+]
+
+{ #category : #accessing }
+CEBlock >> lastInstruction [
+
+	^ firstInstruction end
 ]
 
 { #category : #accessing }

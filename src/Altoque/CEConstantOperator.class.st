@@ -21,6 +21,12 @@ CEConstantOperator >> description [
 	^ value printString
 ]
 
+{ #category : #testing }
+CEConstantOperator >> isConstant [
+	
+	^ true
+]
+
 { #category : #accessing }
 CEConstantOperator >> value [
 	^ value

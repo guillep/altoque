@@ -21,6 +21,12 @@ CELiteralVariableOperator >> description [
 	^ value printString
 ]
 
+{ #category : #testing }
+CELiteralVariableOperator >> isLiteralVariable [
+	
+	^ true
+]
+
 { #category : #accessing }
 CELiteralVariableOperator >> value [
 	^ value

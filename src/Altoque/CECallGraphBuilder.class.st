@@ -79,22 +79,17 @@ CECallGraphBuilder >> blockList: anObject [
 
 { #category : #building }
 CECallGraphBuilder >> build [
+
 	| start |
 	self assert: [ blockList isSortedBy: [ :a :b | a bytecodeIndex < b bytecodeIndex ] ].
 	bytecodeScanner := InstructionStream on: method.
-	selfOperand := instructionFactory newSelfOperand.
-	
+	1halt.
 	start := self buildStartBlock.
-	1 to: blockList size do: [ :currentBlockIndex |
-		self fillBlockWithInstructions: currentBlockIndex ].
-
-	"This could be done during block filling,
-	but it requires that the successor/predecessor relation is set up beforehand"
-	self buildDominatorTreeFrom: start.
-
-	"We have to do this because the dominator tree was not available during instruction filling.
-	Otherwise this could be done during instruction filling."
-	"self generateParameterLoads"
+	self
+		depthFirstSearchStartingAt: start
+		doing: [ :pred :sux |
+			self calculateDominatorBetween: sux andPredecessor: pred.
+			self fillBlockWithInstructions: sux ]
 ]
 
 { #category : #'dominator-tree' }
@@ -102,11 +97,7 @@ CECallGraphBuilder >> buildDominatorTreeFrom: aCEBlock [
 
 	self
 		depthFirstSearchStartingAt: aCEBlock
-		doing: [ :sux :pred |
-			sux dominator: (sux dominator
-				ifNil: [ pred ]
-				ifNotNil: [ :currentDominator | 
-					self commonDominatorBetween: currentDominator and: pred ]) ]
+		doing: [ :pred :sux | self calculateDominatorBetween: sux andPredecessor: pred ]
 ]
 
 { #category : #building }
@@ -121,15 +112,26 @@ CECallGraphBuilder >> buildStartBlock [
 		begin: start).
 
 	start firstInstruction end: start firstInstruction next.
-	start firstInstruction end addSuccessor: blockList first.
+	start addSuccessor: blockList first.
 	blockList first addPredecessor: start.
 
-	temporaryArray := Array new: bytecodeScanner method numTemps.
-	1 to: bytecodeScanner method numArgs do: [ :i | 
-		| argument |
-		argument := CEArgumentOperation new index: i.
-		temporaryArray at: i put: argument ].
+	self initializeMethodTemporaryArrayWithArguments: method numArgs andTemps: method numTemps.
+
 	^ start
+]
+
+{ #category : #accessing }
+CECallGraphBuilder >> bytecodeScanner: aCECallGraphBuilderTest [ 
+	bytecodeScanner := aCECallGraphBuilderTest
+]
+
+{ #category : #'dominator-tree' }
+CECallGraphBuilder >> calculateDominatorBetween: aBlock andPredecessor: aPredecessorBlock [
+
+	aBlock dominator: (aBlock dominator
+		ifNil: [ aPredecessorBlock ]
+		ifNotNil: [ :currentDominator | 
+			self commonDominatorBetween: currentDominator and: aPredecessorBlock ])
 ]
 
 { #category : #'dominator-tree' }
@@ -155,7 +157,7 @@ CECallGraphBuilder >> depthFirstSearchFrom: predecessor to: successor doing: aBl
 	predecessorsNotVisited := visitedIncomingEdges at: successor ifAbsentPut: [ successor predecessors size ].
 	visitedIncomingEdges at: successor put: (predecessorsNotVisited := predecessorsNotVisited - 1).
 	
-	aBlockClosure value: successor value: predecessor.
+	aBlockClosure value: predecessor value: successor.
 	
 	predecessorsNotVisited = successor incomingBackwardBranches
 		ifFalse: [ ^ self ].
@@ -182,34 +184,20 @@ CECallGraphBuilder >> doPop [
 ]
 
 { #category : #building }
-CECallGraphBuilder >> fillBlockWithInstructions: index [
+CECallGraphBuilder >> fillBlockWithInstructions: aBlock [
 
 	| blockLimitPC |	
-	currentBlock := blockList at: index.
-	currentInstruction := instructionFactory newBlockBeginWithBytecodeIndex: currentBlock bytecodeIndex.
-	currentBlock firstInstruction: currentInstruction.
-	
-	operandStack := Stack new.
-	
-	currentBlock isLoopHeader
-		ifTrue: [ 
-			"Should initialize the temporary frame with phi functions"
-			temporaryArray := temporaryArray collect: [ :e |
-				instructionFactory newPhiFunctionWith: e  ].
-			currentBlock locals: temporaryArray copy. ]
-		ifFalse: [
-			currentBlock predecessors size > 1 ifTrue: [ 
-				"Normal join point"
-				self mergeTemporariesOf: currentBlock predecessors.
-				currentBlock locals: temporaryArray copy ] ].
+	self setBlock: aBlock.
+	bytecodeScanner pc: aBlock bytecodeIndex.
 
-	blockLimitPC := blockList size > index
-		ifTrue: [ (blockList at: index + 1) bytecodeIndex ]
+	blockLimitPC := blockList size > (blockList indexOf: aBlock)
+		ifTrue: [ (blockList at: (blockList indexOf: aBlock) + 1) bytecodeIndex ]
 		ifFalse: [ method endPC + 1 ].
 
-	[bytecodeScanner pc < blockLimitPC] whileTrue: [
-		currentPC := bytecodeScanner pc.
-		bytecodeScanner interpretNextInstructionFor: self.
+	[method initialPC < bytecodeScanner pc
+		and: [ bytecodeScanner pc < blockLimitPC ]] whileTrue: [
+			currentPC := bytecodeScanner pc.
+			bytecodeScanner interpretNextInstructionFor: self.
 	].
 
 	"Finished all the instructions in the block.
@@ -236,7 +224,34 @@ CECallGraphBuilder >> fillBlockWithInstructions: index [
 CECallGraphBuilder >> initialize [
 
 	super initialize.
+	instructionFactory := CEInstructionFactory new.
 	visitedIncomingEdges := Dictionary new.
+]
+
+{ #category : #'block-building' }
+CECallGraphBuilder >> initializeBlockArguments: aBlock [
+
+	aBlock isLoopHeader
+		ifTrue: [ 
+			"Should initialize the temporary frame with phi functions"
+			temporaryArray := temporaryArray collect: [ :e |
+				instructionFactory newPhiFunctionWith: e  ].
+			aBlock locals: temporaryArray copy. ]
+		ifFalse: [
+			aBlock predecessors size > 1 ifTrue: [ 
+				"Normal join point"
+				self mergeTemporariesOf: currentBlock predecessors.
+				aBlock locals: temporaryArray copy ] ].
+]
+
+{ #category : #building }
+CECallGraphBuilder >> initializeMethodTemporaryArrayWithArguments: numArgs andTemps: numTemps [
+	selfOperand := instructionFactory newSelfOperand.
+	temporaryArray := Array new: numTemps.
+	1 to: numArgs do: [ :i | 
+		| argument |
+		argument := CEArgumentOperation new index: i.
+		temporaryArray at: i put: argument ].
 ]
 
 { #category : #accessing }
@@ -276,12 +291,8 @@ CECallGraphBuilder >> jump: anInteger if: aBoolean [
 	self append: instruction.
 	self push: instruction.
 	currentBlock firstInstruction end: instruction.
-	
 	instruction jumpTarget: targetBlock.
-	instruction addSuccessor: targetBlock.
-	targetBlock addPredecessor: currentBlock.
-	instruction addSuccessor: self nextBlock.
-	self nextBlock addPredecessor: currentBlock.
+	instruction falseConditionJumpTarget: (self detectBlockWithStartBytecodeIndex: bytecodeScanner pc).
 	
 	anInteger < 0 ifTrue: [ instruction beBackwardsBranch ]
 ]
@@ -419,4 +430,16 @@ CECallGraphBuilder >> send: aString super: aBoolean numArgs: aNumberOfArguments 
 	
 	self append: instruction.
 	self push: instruction.
+]
+
+{ #category : #building }
+CECallGraphBuilder >> setBlock: aBlock [
+
+	currentBlock := aBlock.
+	currentInstruction := instructionFactory
+		newBlockBeginWithBytecodeIndex: currentBlock bytecodeIndex.
+	currentBlock firstInstruction: currentInstruction.
+	operandStack := Stack new.
+	
+	self initializeBlockArguments: currentBlock
 ]
