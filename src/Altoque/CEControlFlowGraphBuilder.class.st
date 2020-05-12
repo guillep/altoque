@@ -291,13 +291,26 @@ CEControlFlowGraphBuilder >> jump: anInteger if: aBoolean [
 	anInteger < 0 ifTrue: [ instruction beBackwardsBranch ]
 ]
 
+{ #category : #'stack-management' }
+CEControlFlowGraphBuilder >> loadInstructionForArgument: anArgument [
+	| loadInstruction |
+	anArgument isLoaded ifTrue: [ ^ anArgument loadInstruction ].
+	
+	loadInstruction := anArgument isTemporary
+		ifTrue: [ CEConstantOperator new value: nil ]
+		ifFalse: [ instructionFactory newLoad: anArgument ].	
+	
+	anArgument loadInstruction: loadInstruction.
+	^ loadInstruction
+]
+
 { #category : #temporariesArray }
 CEControlFlowGraphBuilder >> mergeTemporariesOfBlock: aBlock from: aPredecessor [
 
 	"We generate phi functions in loop headers for all variables in advance.
 	Otherwise all variables in the loop could be subject to a rename when the backward branch is visited"
 	aBlock isLoopHeader ifTrue: [ 
-		aBlock locals: (temporaryArray collect: [ :temp | (instructionFactory newPhiFunctionWith: temp) ]) ].
+		aBlock locals: ((1 to: temporaryArray size) collect: [ :temp | instructionFactory newPhiFunction ]) ].
 
 	"If a block has only one predecessor, no merge is necessary and no state array is stored for this block."
 	aBlock predecessors size <= 1 ifTrue: [ ^ self ].
@@ -308,6 +321,8 @@ CEControlFlowGraphBuilder >> mergeTemporariesOfBlock: aBlock from: aPredecessor 
 	"If it is visited again, the new state array is compared with the stored state array element by
 element, and phi functions are generated or updated for each different value"
 	aBlock locals: (aBlock locals with: aPredecessor locals collect: [ :a :b |
+		a isArgument ifTrue: [ self halt ].
+		b isArgument ifTrue: [ aPredecessor appendBeforeEnd: (self loadInstructionForArgument: b) ].
 		a = b
 			ifTrue: [ a ]
 			ifFalse: [ instructionFactory newPhiFunctionWith: a with: b ] ]).
@@ -350,18 +365,11 @@ CEControlFlowGraphBuilder >> pop [
 { #category : #'stack-management' }
 CEControlFlowGraphBuilder >> popForUsage [
 
-	| poppedValue loadInstruction |
+	| poppedValue |
 	poppedValue := self pop.
 	poppedValue isArgument ifFalse: [ ^ poppedValue ].
-	poppedValue isLoaded ifTrue: [ ^ poppedValue loadInstruction ].
 	
-	loadInstruction := poppedValue isTemporary
-		ifTrue: [ CEConstantOperator new value: nil ]
-		ifFalse: [ instructionFactory newLoad: poppedValue ].	
-	
-	poppedValue loadInstruction: loadInstruction.
-	self append: loadInstruction.
-	^ loadInstruction
+	^ self append: (self loadInstructionForArgument: poppedValue)
 ]
 
 { #category : #'instruction decoding' }
@@ -450,4 +458,9 @@ CEControlFlowGraphBuilder >> setBlock: aBlock [
 		newBlockBeginWithBytecodeIndex: currentBlock bytecodeIndex.
 	currentBlock firstInstruction: currentInstruction.
 	operandStack := Stack new.
+]
+
+{ #category : #accessing }
+CEControlFlowGraphBuilder >> temporaryArray [
+	^ temporaryArray
 ]

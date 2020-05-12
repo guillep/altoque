@@ -53,6 +53,14 @@ CEInstructionFactory >> newLoad: aLocal [
 ]
 
 { #category : #factory }
+CEInstructionFactory >> newPhiFunction [
+	
+	^ CEPhiOperation new
+		instructionID: self allocateInstructionID;
+		yourself
+]
+
+{ #category : #factory }
 CEInstructionFactory >> newPhiFunctionWith: aCEArgumentOperation [ 
 	
 	^ CEPhiOperation new

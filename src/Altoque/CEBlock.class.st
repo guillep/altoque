@@ -26,6 +26,14 @@ CEBlock >> addSuccessor: aBlock [
 	successors add: aBlock
 ]
 
+{ #category : #appending }
+CEBlock >> appendBeforeEnd: aCELoadLocal [ 
+	
+	firstInstruction isBlockEnd ifFalse: [ self halt ].
+	aCELoadLocal next: firstInstruction.
+	firstInstruction := aCELoadLocal
+]
+
 { #category : #accessing }
 CEBlock >> blockID [
 	

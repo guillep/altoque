@@ -345,12 +345,13 @@ CEControlFlowGraphBuilderTest >> testPhiFunctionWithNonLoadedArgumentShouldLoadI
 
 	builder := CEControlFlowGraphBuilder new.
 	builder initializeMethodTemporaryArrayWithArguments: 1 andTemps: 1.
+	thePredecessor locals: builder temporaryArray.
 	builder
-		depthFirstSearchStartingAt: block
+		depthFirstSearchStartingAt: thePredecessor
 		doing: [ :pred :sux | builder mergeTemporariesOfBlock: sux from: pred ].
 
-	self assert: thePredecessor firstInstruction next isLoadLocal.
-	self assert: thePredecessor firstInstruction next index equals: 1.
+	self assert: thePredecessor firstInstruction isLoadLocal.
+	self assert: thePredecessor firstInstruction index equals: 1.
 ]
 
 { #category : #'test-pusharguments' }
