@@ -322,6 +322,74 @@ CEControlFlowGraphBuilderTest >> testInitializeLoopHeaderBlocArgumentsHasPhiFunc
 	self assert: (block locals allSatisfy: [ :e | e isPhi ])
 ]
 
+{ #category : #'test-pusharguments' }
+CEControlFlowGraphBuilderTest >> testPushArgumentAppendsLoadLocalInstructionOnUse [
+
+	| block |
+	block := CEBlock new.
+
+	CEControlFlowGraphBuilder new
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
+		setBlock: block;
+		"Receiver, then send"
+		pushTemporaryVariable: 0;
+		send: #unary super: false numArgs: 0.
+		
+	self assert: block firstInstruction next isLoadLocal
+]
+
+{ #category : #'test-pusharguments' }
+CEControlFlowGraphBuilderTest >> testPushArgumentAppendsLoadLocalInstructionOnUseWithTemporaryIndex [
+
+	| block |
+	block := CEBlock new.
+
+	CEControlFlowGraphBuilder new
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
+		setBlock: block;
+		"Receiver, then send"
+		pushTemporaryVariable: 0;
+		send: #unary super: false numArgs: 0.
+		
+	self assert: block firstInstruction next index equals: 1 "We shift it by one..."
+]
+
+{ #category : #'test-pusharguments' }
+CEControlFlowGraphBuilderTest >> testPushArgumentAppendsLoadLocalInstructionOnlyOnFirstUse [
+
+	| block messageSend |
+	block := CEBlock new.
+
+	CEControlFlowGraphBuilder new
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
+		setBlock: block;
+		"Receiver, then send"
+		pushTemporaryVariable: 0;
+		pushTemporaryVariable: 0;
+		send: #keyword: super: false numArgs: 1.
+		
+	self assert: block firstInstruction next isLoadLocal.
+	messageSend := block firstInstruction next next.
+	self assert: messageSend receiver equals: messageSend arguments first
+]
+
+{ #category : #'tests-pushinstructions' }
+CEControlFlowGraphBuilderTest >> testPushArgumentDoesNotAppendArgumentInstruction [
+
+	| block |
+	block := CEBlock new.
+	block incrementIncomingBackwardBranches.
+	block addSuccessor: block.
+	block addPredecessor: block.
+
+	CEControlFlowGraphBuilder new
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
+		setBlock: block;
+		pushTemporaryVariable: 0.
+		
+	self assert: block firstInstruction next isNil
+]
+
 { #category : #'tests-pushinstructions' }
 CEControlFlowGraphBuilderTest >> testPushConstantAppendsConstantInstruction [
 
@@ -338,6 +406,44 @@ CEControlFlowGraphBuilderTest >> testPushConstantAppendsConstantInstruction [
 		
 	self assert: block firstInstruction next isConstant.
 	self assert: block firstInstruction next value equals: 17.
+]
+
+{ #category : #'test-pusharguments' }
+CEControlFlowGraphBuilderTest >> testPushFreshTemporaryAppendsNilConstantValueInstructionOnUse [
+
+	| block |
+	block := CEBlock new.
+
+	CEControlFlowGraphBuilder new
+		"3 temps, from where 2 are arguments, so the last one is a normal temp that should be nil initially"
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 3;
+		setBlock: block;
+		"Receiver, then send"
+		pushTemporaryVariable: 2;
+		send: #unary super: false numArgs: 0.
+		
+	self assert: block firstInstruction next isConstant.
+	self assert: block firstInstruction next value equals: nil
+]
+
+{ #category : #'test-pusharguments' }
+CEControlFlowGraphBuilderTest >> testPushFreshTemporaryAppendsNilConstantValueInstructionOnlyOnFirstUse [
+
+	| block messageSend |
+	block := CEBlock new.
+
+	CEControlFlowGraphBuilder new
+		"3 temps, from where 2 are arguments, so the last one is a normal temp that should be nil initially"
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 3;
+		setBlock: block;
+		"Receiver, then send"
+		pushTemporaryVariable: 2;
+		pushTemporaryVariable: 2;
+		send: #keyword: super: false numArgs: 1.
+		
+	self assert: block firstInstruction next isConstant.
+	messageSend := block firstInstruction next next.
+	self assert: messageSend receiver equals: messageSend arguments first
 ]
 
 { #category : #'tests-pushinstructions' }
@@ -423,6 +529,23 @@ CEControlFlowGraphBuilderTest >> testPushReceiverDoesNotAppendReceiverInstructio
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		pushReceiver.
+		
+	self assert: block firstInstruction next isNil
+]
+
+{ #category : #'tests-pushinstructions' }
+CEControlFlowGraphBuilderTest >> testPushTemporaryDoesNotAppendArgumentInstruction [
+
+	| block |
+	block := CEBlock new.
+	block incrementIncomingBackwardBranches.
+	block addSuccessor: block.
+	block addPredecessor: block.
+
+	CEControlFlowGraphBuilder new
+		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 3;
+		setBlock: block;
+		pushTemporaryVariable: 2.
 		
 	self assert: block firstInstruction next isNil
 ]

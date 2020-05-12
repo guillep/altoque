@@ -252,6 +252,8 @@ CEControlFlowGraphBuilder >> initializeMethodTemporaryArrayWithArguments: numArg
 		| argument |
 		argument := CEArgumentOperation new index: i.
 		temporaryArray at: i put: argument ].
+	numArgs + 1 to: numTemps do: [ :i |
+		temporaryArray at: i put: (CETemporaryOperand new index: i) ]
 ]
 
 { #category : #accessing }
@@ -352,7 +354,10 @@ CEControlFlowGraphBuilder >> popForUsage [
 	poppedValue isArgument ifFalse: [ ^ poppedValue ].
 	poppedValue isLoaded ifTrue: [ ^ poppedValue loadInstruction ].
 	
-	loadInstruction := instructionFactory newLoad: poppedValue.
+	loadInstruction := poppedValue isTemporary
+		ifTrue: [ CEConstantOperator new value: nil ]
+		ifFalse: [ instructionFactory newLoad: poppedValue ].	
+	
 	poppedValue loadInstruction: loadInstruction.
 	self append: loadInstruction.
 	^ loadInstruction

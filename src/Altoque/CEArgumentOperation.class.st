@@ -43,6 +43,12 @@ CEArgumentOperation >> isLoaded [
 	^ loadInstruction notNil
 ]
 
+{ #category : #testing }
+CEArgumentOperation >> isTemporary [
+	
+	^ false
+]
+
 { #category : #accessing }
 CEArgumentOperation >> loadInstruction [
 	
