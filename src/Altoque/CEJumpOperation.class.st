@@ -7,6 +7,11 @@ Class {
 	#category : #'Altoque-High-Level-IR'
 }
 
+{ #category : #accessing }
+CEJumpOperation class >> jumpTarget: aTargetCEBlock [
+	^ self new jumpTarget: aTargetCEBlock
+]
+
 { #category : #printing }
 CEJumpOperation >> description [
 	

@@ -1,108 +1,131 @@
 Class {
 	#name : #CEHIRPrinter,
 	#superclass : #Object,
+	#instVars : [
+		'outputStream'
+	],
 	#category : #'Altoque-Base'
 }
 
+{ #category : #'instance creation' }
+CEHIRPrinter class >> on: aStream [
+	^ self new outputStream: aStream; yourself
+]
+
+{ #category : #'instance creation' }
+CEHIRPrinter class >> onTranscript [
+	^ self on: Transcript
+]
+
+{ #category : #accessing }
+CEHIRPrinter >> outputStream [
+	^ outputStream
+]
+
+{ #category : #accessing }
+CEHIRPrinter >> outputStream: anObject [
+	outputStream := anObject
+]
+
 { #category : #printing }
-CEHIRPrinter class >> print: aHIR [
+CEHIRPrinter >> print: aHIR [
 	
 	aHIR do: [ :e |
 		self printBlock: e.
-		Transcript cr; cr
+		outputStream cr; cr
 	]
 ]
 
 { #category : #printing }
-CEHIRPrinter class >> printBlock: aCEBlock [
+CEHIRPrinter >> printBlock: aCEBlock [
 
 	self printBlockHeader: aCEBlock.
-	Transcript cr.
+	outputStream cr.
 	self printBlockLocalsIfPhi: aCEBlock.
-	Transcript cr.
+	outputStream cr.
 	self printBlockInstructions: aCEBlock.
 ]
 
 { #category : #printing }
-CEHIRPrinter class >> printBlockHeader: aBlock [ 
+CEHIRPrinter >> printBlockHeader: aBlock [ 
 	
-	Transcript
-		show: 'B';
-		show: aBlock blockID.
-	Transcript
-		show: '[';
-		show: aBlock bytecodeIndex;
-		show: ', ';
-		show: aBlock end bytecodeIndex;
-		show: ']'.
+	outputStream
+		nextPutAll: 'B';
+		print: aBlock blockID.
+	outputStream
+		nextPutAll: '[';
+		print: aBlock bytecodeIndex;
+		nextPutAll: ', ';
+		print: aBlock end bytecodeIndex;
+		nextPutAll: ']'.
 	
 	aBlock hasPredecessors ifTrue: [
-		Transcript show: ' pred '.
+		outputStream nextPutAll: ' pred '.
 		aBlock predecessors do: [ :p |
-			Transcript
-				show: 'B';
-				show: p blockID
-		] separatedBy: [ Transcript space ] ].
+			outputStream
+				nextPutAll: 'B';
+				print: p blockID
+		] separatedBy: [ outputStream space ] ].
 
 	aBlock hasSuccessors ifTrue: [
-		Transcript show: ' sux '.
+		outputStream nextPutAll: ' sux '.
 		aBlock successors do: [ :p |
-			Transcript
-				show: 'B';
-				show: p blockID
-		] separatedBy: [ Transcript space ] ]
+			outputStream
+				nextPutAll: 'B';
+				print: p blockID
+		] separatedBy: [ outputStream space ] ]
 ]
 
 { #category : #printing }
-CEHIRPrinter class >> printBlockInstructions: aCEBlock [
+CEHIRPrinter >> printBlockInstructions: aCEBlock [
 
-	Transcript
-		show: 'bci';
+	outputStream
+		nextPutAll: 'bci';
 		tab;
 		tab;
-		show: 'id';
+		nextPutAll: 'id';
 		tab;
 		tab;
-		show: 'description';
+		nextPutAll: 'description';
 		cr.
-	Transcript
+	outputStream
 		print: '____________________________________';
 		cr.
 	aCEBlock instructionsDo: [ :i |
 		self printInstruction: i.
-		Transcript cr ]
+		outputStream cr ]
 ]
 
 { #category : #printing }
-CEHIRPrinter class >> printBlockLocalsIfPhi: aCEBlock [
+CEHIRPrinter >> printBlockLocalsIfPhi: aCEBlock [
 	
 	aCEBlock locals ifNil: [ ^ self ].
-	Transcript show: 'Locals:'; cr.
+	outputStream show: 'Locals:'; cr.
 	aCEBlock locals do: [ :e | 
 		e isPhi ifTrue: [
-			Transcript tab; tab; tab.
-			Transcript
+			outputStream tab; tab; tab.
+			outputStream
 				show: 't';
 				show: e instructionID asString;
 				show: '[ '.
 			e operations do: [ :op |
-				Transcript
+				outputStream
 					show: 't';
 					show: op instructionID asString;
 					space ].
-			Transcript show: ']'; cr ] ]
+			outputStream show: ']'; cr ] ]
 ]
 
 { #category : #printing }
-CEHIRPrinter class >> printInstruction: anOperation [
+CEHIRPrinter >> printInstruction: anOperation [
 	
-	Transcript
-		show: anOperation bytecodeIndex;
+	outputStream
+		print: anOperation bytecodeIndex;
 		tab;
 		tab;
-		show: 't';
-		show: anOperation instructionID;
+		nextPutAll: 't';
+		print: anOperation instructionID;
 		tab;
 		tab;
-		show: anOperation description
+		print: anOperation description
 ]

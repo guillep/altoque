@@ -20,7 +20,7 @@ CEBackwardBranchToStartBuildTest >> setUp [
 	initialPC := 10.
 	jumpSize := 3. "Whatever value, just for testing"
 	
-	builder := CEBlockListBuilder new.
+	builder := CEBlockListFromBytecodeBuilder new.
 	builder bytecodeScanner: self.
 	builder startOnBytecodeIndex: initialPC.
 

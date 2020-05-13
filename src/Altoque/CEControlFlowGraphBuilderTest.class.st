@@ -25,7 +25,7 @@ CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsBlockEndInst
 	block addSuccessor: fallthroughBlock.
 	fallthroughBlock addPredecessor: block.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -54,7 +54,7 @@ CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithFallth
 	block addSuccessor: fallthroughBlock.
 	fallthroughBlock addPredecessor: block.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -83,7 +83,7 @@ CEControlFlowGraphBuilderTest >> testBackwardsConditionalJumpAppendsIfWithJumpTa
 	block addSuccessor: fallthroughBlock.
 	fallthroughBlock addPredecessor: block.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -108,7 +108,7 @@ CEControlFlowGraphBuilderTest >> testBackwardsJumpAppendsBlockEndInstruction [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -131,7 +131,7 @@ CEControlFlowGraphBuilderTest >> testBackwardsJumpAppendsGotoWithJumpTarget [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -154,7 +154,7 @@ CEControlFlowGraphBuilderTest >> testBlocHasAsManyArgumentsAsMethod [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	builder := CEControlFlowGraphBuilder new.
+	builder := CEControlFlowGraphFromBytecodeBuilder new.
 	builder initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2.
 	builder
 		depthFirstSearchStartingAt: block
@@ -186,7 +186,7 @@ CEControlFlowGraphBuilderTest >> testForwardConditionalJumpAppendsBlockEndInstru
 	block1 addSuccessor: fallthroughBlock.
 	fallthroughBlock addPredecessor: block1.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block1 . targetBlock . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -215,7 +215,7 @@ CEControlFlowGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithFallthro
 	block1 addSuccessor: fallthroughBlock.
 	fallthroughBlock addPredecessor: block1.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block1 . targetBlock . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -244,7 +244,7 @@ CEControlFlowGraphBuilderTest >> testForwardConditionalJumpAppendsIfWithJumpTarg
 	block1 addSuccessor: fallthroughBlock.
 	fallthroughBlock addPredecessor: block1.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block1 . targetBlock . fallthroughBlock };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -270,7 +270,7 @@ CEControlFlowGraphBuilderTest >> testForwardJumpAppendsAppendsGotoWithJumpTarget
 	block1 addSuccessor: block2.
 	block2 addPredecessor: block1.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block1 . block2 };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -294,7 +294,7 @@ CEControlFlowGraphBuilderTest >> testForwardJumpAppendsBlockEndInstruction [
 	block1 addSuccessor: block2.
 	block2 addPredecessor: block1.
 
-	builder := CEControlFlowGraphBuilder new
+	builder := CEControlFlowGraphFromBytecodeBuilder new
 		blockList: { block1 . block2 };
 		bytecodeScanner: self;
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
@@ -326,7 +326,7 @@ CEControlFlowGraphBuilderTest >> testInitializeLoopHeaderBlocArgumentsHasPhiFunc
 	startBlock firstInstruction next: (CEJumpOperation new jumpTarget: block).
 	startBlock firstInstruction end: startBlock firstInstruction next.
 
-	builder := CEControlFlowGraphBuilder new.
+	builder := CEControlFlowGraphFromBytecodeBuilder new.
 	builder initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2.
 	startBlock locals: builder temporaryArray.
 	builder
@@ -359,7 +359,7 @@ CEControlFlowGraphBuilderTest >> testPhiFunctionWithNonLoadedArgumentShouldCreat
 		yourself).
 	theNonDominatorPredecessor firstInstruction: (CEJumpOperation new jumpTarget: block).
 
-	builder := CEControlFlowGraphBuilder new.
+	builder := CEControlFlowGraphFromBytecodeBuilder new.
 	builder initializeMethodTemporaryArrayWithArguments: 1 andTemps: 1.
 	theCommonPredecessor locals: builder temporaryArray.
 	builder
@@ -392,7 +392,7 @@ CEControlFlowGraphBuilderTest >> testPhiFunctionWithNonLoadedArgumentShouldLoadI
 	thePredecessor firstInstruction: (CEJumpOperation new jumpTarget: block).
 	block firstInstruction: (CEJumpOperation new jumpTarget: block).
 
-	builder := CEControlFlowGraphBuilder new.
+	builder := CEControlFlowGraphFromBytecodeBuilder new.
 	builder initializeMethodTemporaryArrayWithArguments: 1 andTemps: 1.
 	thePredecessor locals: builder temporaryArray.
 	builder
@@ -409,7 +409,7 @@ CEControlFlowGraphBuilderTest >> testPushArgumentAppendsLoadLocalInstructionOnUs
 	| block |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -425,7 +425,7 @@ CEControlFlowGraphBuilderTest >> testPushArgumentAppendsLoadLocalInstructionOnUs
 	| block |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -441,7 +441,7 @@ CEControlFlowGraphBuilderTest >> testPushArgumentAppendsLoadLocalInstructionOnly
 	| block messageSend |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -463,7 +463,7 @@ CEControlFlowGraphBuilderTest >> testPushArgumentDoesNotAppendArgumentInstructio
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		pushTemporaryVariable: 0.
@@ -480,7 +480,7 @@ CEControlFlowGraphBuilderTest >> testPushConstantAppendsConstantInstruction [
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		pushConstant: 17.
@@ -495,7 +495,7 @@ CEControlFlowGraphBuilderTest >> testPushFreshTemporaryAppendsNilConstantValueIn
 	| block |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		"3 temps, from where 2 are arguments, so the last one is a normal temp that should be nil initially"
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 3;
 		setBlock: block;
@@ -513,7 +513,7 @@ CEControlFlowGraphBuilderTest >> testPushFreshTemporaryAppendsNilConstantValueIn
 	| block messageSend |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		"3 temps, from where 2 are arguments, so the last one is a normal temp that should be nil initially"
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 3;
 		setBlock: block;
@@ -537,7 +537,7 @@ CEControlFlowGraphBuilderTest >> testPushLiteralAppendsLiteralInstruction [
 	block addPredecessor: block.
 
 	literal := #Global -> 17.
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		pushLiteralVariable: literal.
@@ -552,7 +552,7 @@ CEControlFlowGraphBuilderTest >> testPushReceiverAppendsLoadLocalInstructionOnUs
 	| block |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -568,7 +568,7 @@ CEControlFlowGraphBuilderTest >> testPushReceiverAppendsLoadLocalInstructionOnUs
 	| block |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -584,7 +584,7 @@ CEControlFlowGraphBuilderTest >> testPushReceiverAppendsLoadLocalInstructionOnly
 	| block messageSend |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -606,7 +606,7 @@ CEControlFlowGraphBuilderTest >> testPushReceiverDoesNotAppendReceiverInstructio
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		pushReceiver.
@@ -623,7 +623,7 @@ CEControlFlowGraphBuilderTest >> testPushTemporaryDoesNotAppendArgumentInstructi
 	block addSuccessor: block.
 	block addPredecessor: block.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 3;
 		setBlock: block;
 		pushTemporaryVariable: 2.
@@ -637,7 +637,7 @@ CEControlFlowGraphBuilderTest >> testSendBinaryAppendsSendInstruction [
 	| block |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -654,7 +654,7 @@ CEControlFlowGraphBuilderTest >> testSendKeywordAppendsSendInstruction [
 	| block |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"
@@ -671,7 +671,7 @@ CEControlFlowGraphBuilderTest >> testSendUnaryAppendsSendInstruction [
 	| block |
 	block := CEBlock new.
 
-	CEControlFlowGraphBuilder new
+	CEControlFlowGraphFromBytecodeBuilder new
 		initializeMethodTemporaryArrayWithArguments: 2 andTemps: 2;
 		setBlock: block;
 		"Receiver, then send"

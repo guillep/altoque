@@ -22,7 +22,7 @@ CEReturnBuildTest >> setUp [
 	| builder |
 	initialPC := 10.
 	
-	builder := CEBlockListBuilder new.
+	builder := CEBlockListFromBytecodeBuilder new.
 	builder bytecodeScanner: self.
 	builder startOnBytecodeIndex: initialPC.
 

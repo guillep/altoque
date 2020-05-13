@@ -7,6 +7,11 @@ Class {
 	#category : #'Altoque-High-Level-IR'
 }
 
+{ #category : #accessing }
+CEReturnOperation class >> result: aResultCEOperation [
+	^ self new result: aResultCEOperation
+]
+
 { #category : #printing }
 CEReturnOperation >> description [
 

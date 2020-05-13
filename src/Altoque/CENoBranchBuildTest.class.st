@@ -15,7 +15,7 @@ CENoBranchBuildTest >> setUp [
 
 	blockBytecodeIndex := 10.
 	
-	builder := CEBlockListBuilder new.
+	builder := CEBlockListFromBytecodeBuilder new.
 	builder startOnBytecodeIndex: blockBytecodeIndex.
 	builder pushConstant: 17.
 	builder pushConstant: 17.

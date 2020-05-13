@@ -7,7 +7,7 @@ CEHIRPrinter print: blockList
 
 "
 Class {
-	#name : #CEControlFlowGraphBuilder,
+	#name : #CEControlFlowGraphFromBytecodeBuilder,
 	#superclass : #Object,
 	#instVars : [
 		'instructionFactory',
@@ -26,13 +26,13 @@ Class {
 }
 
 { #category : #processing }
-CEControlFlowGraphBuilder class >> buildHIRFromBlocks: aBlockList [
+CEControlFlowGraphFromBytecodeBuilder class >> buildHIRFromBlocks: aBlockList [
 
 	^ self new buildHIRFromBlocks: aBlockList
 ]
 
 { #category : #processing }
-CEControlFlowGraphBuilder class >> buildHIRFromBlocks: aBlockList andMethod: aMethod [
+CEControlFlowGraphFromBytecodeBuilder class >> buildHIRFromBlocks: aBlockList andMethod: aMethod [
 
 	^ self new
 		method: aMethod;
@@ -41,26 +41,28 @@ CEControlFlowGraphBuilder class >> buildHIRFromBlocks: aBlockList andMethod: aMe
 ]
 
 { #category : #processing }
-CEControlFlowGraphBuilder class >> buildHIRFromMethod: aMethod [
+CEControlFlowGraphFromBytecodeBuilder class >> buildHIRFromMethod: aCompiledMethod [
 	
 	| instructionFactory blockListBuilder blockList |
 	instructionFactory := CEInstructionFactory new.
-	blockListBuilder := CEBlockListBuilder new.
+	blockListBuilder := CEBlockListFromBytecodeBuilder new.
 	blockListBuilder instructionFactory: instructionFactory.
-	blockList := blockListBuilder buildBlocksFrom: aMethod.
+	blockList := blockListBuilder buildBlocksFrom: aCompiledMethod.
 	blockList := blockList sorted: [ :a :b | a bytecodeIndex < b bytecodeIndex ].
 
 	self new
 		instructionFactory: instructionFactory;
-		method: aMethod;
+		method: aCompiledMethod;
 		blockList: blockList;
 		build.
 
-	^ blockList
+	^ CEMethod new
+		blocks: blockList asOrderedCollection;
+		yourself
 ]
 
 { #category : #'block-building' }
-CEControlFlowGraphBuilder >> append: anInstruction [
+CEControlFlowGraphFromBytecodeBuilder >> append: anInstruction [
 	
 	currentInstruction next: anInstruction.
 	currentInstruction := anInstruction.
@@ -68,22 +70,21 @@ CEControlFlowGraphBuilder >> append: anInstruction [
 ]
 
 { #category : #accessing }
-CEControlFlowGraphBuilder >> blockList [
+CEControlFlowGraphFromBytecodeBuilder >> blockList [
 	^ blockList
 ]
 
 { #category : #accessing }
-CEControlFlowGraphBuilder >> blockList: anObject [
+CEControlFlowGraphFromBytecodeBuilder >> blockList: anObject [
 	blockList := anObject
 ]
 
 { #category : #building }
-CEControlFlowGraphBuilder >> build [
+CEControlFlowGraphFromBytecodeBuilder >> build [
 
 	| start |
 	self assert: [ blockList isSortedBy: [ :a :b | a bytecodeIndex < b bytecodeIndex ] ].
 	bytecodeScanner := InstructionStream on: method.
-	1halt.
 	start := self buildStartBlock.
 	self
 		depthFirstSearchStartingAt: start
@@ -93,7 +94,7 @@ CEControlFlowGraphBuilder >> build [
 ]
 
 { #category : #'dominator-tree' }
-CEControlFlowGraphBuilder >> buildDominatorTreeFrom: aCEBlock [
+CEControlFlowGraphFromBytecodeBuilder >> buildDominatorTreeFrom: aCEBlock [
 
 	self
 		depthFirstSearchStartingAt: aCEBlock
@@ -102,7 +103,7 @@ CEControlFlowGraphBuilder >> buildDominatorTreeFrom: aCEBlock [
 ]
 
 { #category : #building }
-CEControlFlowGraphBuilder >> buildStartBlock [
+CEControlFlowGraphFromBytecodeBuilder >> buildStartBlock [
 	| start |
 	start := CEBlock new
 		id: instructionFactory allocateBlockID;
@@ -122,12 +123,12 @@ CEControlFlowGraphBuilder >> buildStartBlock [
 ]
 
 { #category : #accessing }
-CEControlFlowGraphBuilder >> bytecodeScanner: aCECallGraphBuilderTest [ 
+CEControlFlowGraphFromBytecodeBuilder >> bytecodeScanner: aCECallGraphBuilderTest [ 
 	bytecodeScanner := aCECallGraphBuilderTest
 ]
 
 { #category : #'dominator-tree' }
-CEControlFlowGraphBuilder >> calculateDominatorBetween: aBlock andPredecessor: aPredecessorBlock [
+CEControlFlowGraphFromBytecodeBuilder >> calculateDominatorBetween: aBlock andPredecessor: aPredecessorBlock [
 
 	aBlock dominator: (aBlock dominator
 		ifNil: [ aPredecessorBlock ]
@@ -136,7 +137,7 @@ CEControlFlowGraphBuilder >> calculateDominatorBetween: aBlock andPredecessor: a
 ]
 
 { #category : #'dominator-tree' }
-CEControlFlowGraphBuilder >> commonDominatorBetween: path1 and: path2 [ 
+CEControlFlowGraphFromBytecodeBuilder >> commonDominatorBetween: path1 and: path2 [ 
 	
 	| path1Dominators path1Dominator path2Dominator |
 	path1Dominators := OrderedCollection new.
@@ -152,7 +153,7 @@ CEControlFlowGraphBuilder >> commonDominatorBetween: path1 and: path2 [
 ]
 
 { #category : #building }
-CEControlFlowGraphBuilder >> depthFirstSearchFrom: predecessor to: successor doing: aBlockClosure [
+CEControlFlowGraphFromBytecodeBuilder >> depthFirstSearchFrom: predecessor to: successor doing: aBlockClosure [
 
 	| predecessorsNotVisited |
 	predecessorsNotVisited := visitedIncomingEdges at: successor ifAbsentPut: [ successor predecessors size ].
@@ -166,7 +167,7 @@ CEControlFlowGraphBuilder >> depthFirstSearchFrom: predecessor to: successor doi
 ]
 
 { #category : #building }
-CEControlFlowGraphBuilder >> depthFirstSearchStartingAt: aCEBlock doing: aBlock [
+CEControlFlowGraphFromBytecodeBuilder >> depthFirstSearchStartingAt: aCEBlock doing: aBlock [
 
 	"Iterate the successors using a to:do: loop because the successor collection can be modified in the middle.
 	Specially when phi-functions are manipulated, extra blocks can be created"
@@ -176,19 +177,19 @@ CEControlFlowGraphBuilder >> depthFirstSearchStartingAt: aCEBlock doing: aBlock 
 ]
 
 { #category : #building }
-CEControlFlowGraphBuilder >> detectBlockWithStartBytecodeIndex: aBytecodeIndex [
+CEControlFlowGraphFromBytecodeBuilder >> detectBlockWithStartBytecodeIndex: aBytecodeIndex [
 
 	^ blockList detect: [ :begin | begin bytecodeIndex = aBytecodeIndex ]
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> doPop [
+CEControlFlowGraphFromBytecodeBuilder >> doPop [
 	
 	self pop
 ]
 
 { #category : #building }
-CEControlFlowGraphBuilder >> fillBlockWithInstructions: aBlock [
+CEControlFlowGraphFromBytecodeBuilder >> fillBlockWithInstructions: aBlock [
 
 	| blockLimitPC |	
 	self setBlock: aBlock.
@@ -225,7 +226,7 @@ CEControlFlowGraphBuilder >> fillBlockWithInstructions: aBlock [
 ]
 
 { #category : #building }
-CEControlFlowGraphBuilder >> initialize [
+CEControlFlowGraphFromBytecodeBuilder >> initialize [
 
 	super initialize.
 	instructionFactory := CEInstructionFactory new.
@@ -233,14 +234,14 @@ CEControlFlowGraphBuilder >> initialize [
 ]
 
 { #category : #'block-building' }
-CEControlFlowGraphBuilder >> initializeBlockArguments: aBlock [
+CEControlFlowGraphFromBytecodeBuilder >> initializeBlockArguments: aBlock [
 
 	aBlock predecessors size > 1 ifTrue: [
 		aBlock locals: temporaryArray copy ].
 ]
 
 { #category : #building }
-CEControlFlowGraphBuilder >> initializeMethodTemporaryArrayWithArguments: numArgs andTemps: numTemps [
+CEControlFlowGraphFromBytecodeBuilder >> initializeMethodTemporaryArrayWithArguments: numArgs andTemps: numTemps [
 	selfOperand := instructionFactory newSelfOperand.
 	temporaryArray := Array new: numTemps.
 	1 to: numArgs do: [ :i | 
@@ -252,12 +253,12 @@ CEControlFlowGraphBuilder >> initializeMethodTemporaryArrayWithArguments: numArg
 ]
 
 { #category : #accessing }
-CEControlFlowGraphBuilder >> instructionFactory: aCEInstructionFactory [ 
+CEControlFlowGraphFromBytecodeBuilder >> instructionFactory: aCEInstructionFactory [ 
 	instructionFactory := aCEInstructionFactory
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> jump: anInteger [ 
+CEControlFlowGraphFromBytecodeBuilder >> jump: anInteger [ 
 
 	| absoluteTargetBytecodeIndex targetBlock instruction |
 	absoluteTargetBytecodeIndex := bytecodeScanner pc + anInteger.
@@ -275,7 +276,7 @@ CEControlFlowGraphBuilder >> jump: anInteger [
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> jump: anInteger if: aBoolean [
+CEControlFlowGraphFromBytecodeBuilder >> jump: anInteger if: aBoolean [
 	
 	| absoluteTargetBytecodeIndex targetBlock instruction |
 	absoluteTargetBytecodeIndex := bytecodeScanner pc + anInteger.
@@ -295,7 +296,7 @@ CEControlFlowGraphBuilder >> jump: anInteger if: aBoolean [
 ]
 
 { #category : #'stack-management' }
-CEControlFlowGraphBuilder >> loadInstructionForArgument: anArgument [
+CEControlFlowGraphFromBytecodeBuilder >> loadInstructionForArgument: anArgument [
 	| loadInstruction |
 	anArgument isLoaded ifTrue: [ ^ anArgument loadInstruction ].
 	
@@ -308,7 +309,7 @@ CEControlFlowGraphBuilder >> loadInstructionForArgument: anArgument [
 ]
 
 { #category : #temporariesArray }
-CEControlFlowGraphBuilder >> mergeTemporariesOfBlock: aBlock from: aPredecessor [
+CEControlFlowGraphFromBytecodeBuilder >> mergeTemporariesOfBlock: aBlock from: aPredecessor [
 
 	"We generate phi functions in loop headers for all variables in advance.
 	Otherwise all variables in the loop could be subject to a rename when the backward branch is visited"
@@ -362,41 +363,41 @@ element, and phi functions are generated or updated for each different value"
 ]
 
 { #category : #accessing }
-CEControlFlowGraphBuilder >> method [
+CEControlFlowGraphFromBytecodeBuilder >> method [
 	^ method
 ]
 
 { #category : #accessing }
-CEControlFlowGraphBuilder >> method: anObject [
+CEControlFlowGraphFromBytecodeBuilder >> method: anObject [
 	method := anObject
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> methodReturnReceiver [
+CEControlFlowGraphFromBytecodeBuilder >> methodReturnReceiver [
 	
 	self return: self selfOperand
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> methodReturnTop [
+CEControlFlowGraphFromBytecodeBuilder >> methodReturnTop [
 	
 	self return: self popForUsage
 ]
 
 { #category : #accessing }
-CEControlFlowGraphBuilder >> nextBlock [
+CEControlFlowGraphFromBytecodeBuilder >> nextBlock [
 	
 	^ blockList after: currentBlock
 ]
 
 { #category : #'stack-management' }
-CEControlFlowGraphBuilder >> pop [
+CEControlFlowGraphFromBytecodeBuilder >> pop [
 	
 	^ operandStack pop
 ]
 
 { #category : #'stack-management' }
-CEControlFlowGraphBuilder >> popForUsage [
+CEControlFlowGraphFromBytecodeBuilder >> popForUsage [
 
 	| poppedValue |
 	poppedValue := self pop.
@@ -406,13 +407,13 @@ CEControlFlowGraphBuilder >> popForUsage [
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> popIntoTemporaryVariable: anInteger [ 
+CEControlFlowGraphFromBytecodeBuilder >> popIntoTemporaryVariable: anInteger [ 
 
 	temporaryArray at: anInteger + 1 put: self pop
 ]
 
 { #category : #'stack-management' }
-CEControlFlowGraphBuilder >> push: aValue [
+CEControlFlowGraphFromBytecodeBuilder >> push: aValue [
 	
 	aValue instructionID: instructionFactory allocateInstructionID.
 	aValue bytecodeIndex: currentPC.
@@ -421,7 +422,7 @@ CEControlFlowGraphBuilder >> push: aValue [
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> pushConstant: anInteger [ 
+CEControlFlowGraphFromBytecodeBuilder >> pushConstant: anInteger [ 
 	
 	| instruction |
 	instruction := CEConstantOperator value: anInteger.
@@ -430,7 +431,7 @@ CEControlFlowGraphBuilder >> pushConstant: anInteger [
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> pushLiteralVariable: aLiteralVariable [
+CEControlFlowGraphFromBytecodeBuilder >> pushLiteralVariable: aLiteralVariable [
 	
 	| instruction |
 	instruction := CELiteralVariableOperator value: aLiteralVariable.
@@ -439,19 +440,19 @@ CEControlFlowGraphBuilder >> pushLiteralVariable: aLiteralVariable [
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> pushReceiver [
+CEControlFlowGraphFromBytecodeBuilder >> pushReceiver [
 
 	self push: self selfOperand
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> pushTemporaryVariable: anInteger [ 
+CEControlFlowGraphFromBytecodeBuilder >> pushTemporaryVariable: anInteger [ 
 	
 	self push: (temporaryArray at: anInteger + 1)
 ]
 
 { #category : #'block-building' }
-CEControlFlowGraphBuilder >> return: aValue [
+CEControlFlowGraphFromBytecodeBuilder >> return: aValue [
 	
 	| instruction |
 	instruction := CEReturnOperation new
@@ -464,13 +465,13 @@ CEControlFlowGraphBuilder >> return: aValue [
 ]
 
 { #category : #accessing }
-CEControlFlowGraphBuilder >> selfOperand [
+CEControlFlowGraphFromBytecodeBuilder >> selfOperand [
 
 	^ selfOperand
 ]
 
 { #category : #'instruction decoding' }
-CEControlFlowGraphBuilder >> send: aString super: aBoolean numArgs: aNumberOfArguments [ 
+CEControlFlowGraphFromBytecodeBuilder >> send: aString super: aBoolean numArgs: aNumberOfArguments [ 
 	
 	| receiver arguments instruction |
 	self assert: aBoolean not.
@@ -484,7 +485,7 @@ CEControlFlowGraphBuilder >> send: aString super: aBoolean numArgs: aNumberOfArg
 ]
 
 { #category : #building }
-CEControlFlowGraphBuilder >> setBlock: aBlock [
+CEControlFlowGraphFromBytecodeBuilder >> setBlock: aBlock [
 
 	currentBlock := aBlock.
 	currentInstruction := instructionFactory
@@ -494,6 +495,6 @@ CEControlFlowGraphBuilder >> setBlock: aBlock [
 ]
 
 { #category : #accessing }
-CEControlFlowGraphBuilder >> temporaryArray [
+CEControlFlowGraphFromBytecodeBuilder >> temporaryArray [
 	^ temporaryArray
 ]

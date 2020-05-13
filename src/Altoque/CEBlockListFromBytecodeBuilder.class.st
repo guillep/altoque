@@ -1,5 +1,5 @@
 Class {
-	#name : #CEBlockListBuilder,
+	#name : #CEBlockListFromBytecodeBuilder,
 	#superclass : #InstructionClient,
 	#instVars : [
 		'instructionFactory',
@@ -16,19 +16,19 @@ Class {
 }
 
 { #category : #building }
-CEBlockListBuilder class >> buildBlocksFrom: aCollection [ 
+CEBlockListFromBytecodeBuilder class >> buildBlocksFrom: aCollection [ 
 	
 	^ self new buildBlocksFrom: aCollection
 ]
 
 { #category : #'block-management' }
-CEBlockListBuilder >> appendBlockAtBytecodeIndex: aBytecodeIndex [
+CEBlockListFromBytecodeBuilder >> appendBlockAtBytecodeIndex: aBytecodeIndex [
 	
 	^ self appendBlockAtBytecodeIndex: aBytecodeIndex isBackwardsBranch: false
 ]
 
 { #category : #'block-management' }
-CEBlockListBuilder >> appendBlockAtBytecodeIndex: aBytecodeIndex isBackwardsBranch: aBoolean [
+CEBlockListFromBytecodeBuilder >> appendBlockAtBytecodeIndex: aBytecodeIndex isBackwardsBranch: aBoolean [
 	| block |
 	blocks
 		detect: [ :b | b bytecodeIndex = aBytecodeIndex ]
@@ -49,7 +49,7 @@ CEBlockListBuilder >> appendBlockAtBytecodeIndex: aBytecodeIndex isBackwardsBran
 ]
 
 { #category : #'block-management' }
-CEBlockListBuilder >> blockContainingInstruction: aBytecodeIndex [
+CEBlockListFromBytecodeBuilder >> blockContainingInstruction: aBytecodeIndex [
 
 	"Return the block contaning the bytecode index.
 	I.e., the first block in the list which 
@@ -67,12 +67,12 @@ CEBlockListBuilder >> blockContainingInstruction: aBytecodeIndex [
 ]
 
 { #category : #accessing }
-CEBlockListBuilder >> blocks [
+CEBlockListFromBytecodeBuilder >> blocks [
 	^ blocks
 ]
 
 { #category : #building }
-CEBlockListBuilder >> build [
+CEBlockListFromBytecodeBuilder >> build [
 	
 	"Calculate successors and predecessors from tracked incoming bytecode edges"
 	incoming keysAndValuesDo: [ :block :incomingBytecodeIndexes |
@@ -87,7 +87,7 @@ CEBlockListBuilder >> build [
 ]
 
 { #category : #building }
-CEBlockListBuilder >> buildBlocksFrom: aBytecodeMethod [ 
+CEBlockListFromBytecodeBuilder >> buildBlocksFrom: aBytecodeMethod [ 
 	
 	self bytecodeScanner: (InstructionStream on: aBytecodeMethod).
 	currentBlock := self startOnBytecodeIndex: aBytecodeMethod initialPC.
@@ -101,17 +101,17 @@ CEBlockListBuilder >> buildBlocksFrom: aBytecodeMethod [
 ]
 
 { #category : #accessing }
-CEBlockListBuilder >> bytecodeScanner: aBytecodeScanner [ 
+CEBlockListFromBytecodeBuilder >> bytecodeScanner: aBytecodeScanner [ 
 	bytecodeScanner := aBytecodeScanner
 ]
 
 { #category : #accessing }
-CEBlockListBuilder >> currentPC: anObject [
+CEBlockListFromBytecodeBuilder >> currentPC: anObject [
 	currentPC := anObject
 ]
 
 { #category : #'private-building' }
-CEBlockListBuilder >> doJumpTo: offset [
+CEBlockListFromBytecodeBuilder >> doJumpTo: offset [
 
 	| pcAfterJump jumpBlock targetPC |
 	pcAfterJump := bytecodeScanner pc.
@@ -129,19 +129,19 @@ CEBlockListBuilder >> doJumpTo: offset [
 ]
 
 { #category : #accessing }
-CEBlockListBuilder >> endPC [
+CEBlockListFromBytecodeBuilder >> endPC [
 	
 	^ endPC
 ]
 
 { #category : #accessing }
-CEBlockListBuilder >> endPC: aProgramCounter [
+CEBlockListFromBytecodeBuilder >> endPC: aProgramCounter [
 	
 	endPC := aProgramCounter
 ]
 
 { #category : #initialization }
-CEBlockListBuilder >> initialize [
+CEBlockListFromBytecodeBuilder >> initialize [
 	super initialize.
 	blocks := SortedCollection sortBlock: [ :a :b | a bytecodeIndex < b bytecodeIndex ].
 	incoming := Dictionary new.
@@ -149,12 +149,12 @@ CEBlockListBuilder >> initialize [
 ]
 
 { #category : #accessing }
-CEBlockListBuilder >> instructionFactory: aCEInstructionFactory [ 
+CEBlockListFromBytecodeBuilder >> instructionFactory: aCEInstructionFactory [ 
 	instructionFactory := aCEInstructionFactory
 ]
 
 { #category : #building }
-CEBlockListBuilder >> interpretInstruction: aBlockClosure [
+CEBlockListFromBytecodeBuilder >> interpretInstruction: aBlockClosure [
 
 	currentPC := bytecodeScanner pc.
 	fallThroughNextInstruction := true.
@@ -169,7 +169,7 @@ CEBlockListBuilder >> interpretInstruction: aBlockClosure [
 ]
 
 { #category : #'instruction decoding' }
-CEBlockListBuilder >> jump: offset [
+CEBlockListFromBytecodeBuilder >> jump: offset [
 
 	self doJumpTo: offset.
 	
@@ -178,31 +178,31 @@ CEBlockListBuilder >> jump: offset [
 ]
 
 { #category : #'instruction decoding' }
-CEBlockListBuilder >> jump: offset if: aBoolean [
+CEBlockListFromBytecodeBuilder >> jump: offset if: aBoolean [
 
 	self doJumpTo: offset
 ]
 
 { #category : #'instruction decoding' }
-CEBlockListBuilder >> methodReturnConstant: aConstant [
+CEBlockListFromBytecodeBuilder >> methodReturnConstant: aConstant [
 
 	self return
 ]
 
 { #category : #'instruction decoding' }
-CEBlockListBuilder >> methodReturnReceiver [
+CEBlockListFromBytecodeBuilder >> methodReturnReceiver [
 
 	self return
 ]
 
 { #category : #'instruction decoding' }
-CEBlockListBuilder >> methodReturnTop [
+CEBlockListFromBytecodeBuilder >> methodReturnTop [
 
 	self return
 ]
 
 { #category : #'private-building' }
-CEBlockListBuilder >> return [
+CEBlockListFromBytecodeBuilder >> return [
 
 	| pcAfterReturn |
 	fallThroughNextInstruction := false.
@@ -213,13 +213,13 @@ CEBlockListBuilder >> return [
 ]
 
 { #category : #building }
-CEBlockListBuilder >> startOnBytecodeIndex: aBytecodeIndex [
+CEBlockListFromBytecodeBuilder >> startOnBytecodeIndex: aBytecodeIndex [
 
 	currentBlock := self appendBlockAtBytecodeIndex: aBytecodeIndex
 ]
 
 { #category : #'block-management' }
-CEBlockListBuilder >> trackIncomingBytecode: aBytecodeIndex toBlock: aBlock [
+CEBlockListFromBytecodeBuilder >> trackIncomingBytecode: aBytecodeIndex toBlock: aBlock [
 	"Keep track of back jumps.
 	The incoming set of entries is used later to calculate successors at the end"
 	(incoming at: aBlock ifAbsentPut: [ Set new ]) add: aBytecodeIndex.

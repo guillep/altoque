@@ -62,7 +62,7 @@ CEDominatorTreeTests >> setUp [
 	self connect: (blocks at: 12) with: (blocks at: 2).
 	self connect: (blocks at: 12) with: exit.
 
-	CEControlFlowGraphBuilder new buildDominatorTreeFrom: entry
+	CEControlFlowGraphFromBytecodeBuilder new buildDominatorTreeFrom: entry
 ]
 
 { #category : #tests }

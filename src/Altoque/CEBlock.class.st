@@ -14,6 +14,18 @@ Class {
 	#category : #'Altoque-Base'
 }
 
+{ #category : #building }
+CEBlock class >> buildWith: aBlockClosure [
+	^ self new buildWith: aBlockClosure
+]
+
+{ #category : #adding }
+CEBlock >> addInstruction: anInstruction [
+	self assert: firstInstruction isNotNil.
+	self lastInstruction next: anInstruction.
+	firstInstruction end: anInstruction.
+]
+
 { #category : #accessing }
 CEBlock >> addPredecessor: aBlock [
 
@@ -41,6 +53,13 @@ CEBlock >> blockID [
 	^ id
 ]
 
+{ #category : #building }
+CEBlock >> buildWith: aBlockClosure [
+	| builder |
+	builder := CEBlockBuilder on: self.
+	aBlockClosure value: builder.
+]
+
 { #category : #accessing }
 CEBlock >> bytecodeIndex [
 	^ bytecodeIndex
@@ -49,6 +68,11 @@ CEBlock >> bytecodeIndex [
 { #category : #accessing }
 CEBlock >> bytecodeIndex: anObject [
 	bytecodeIndex := anObject
+]
+
+{ #category : #'as yet unclassified' }
+CEBlock >> childrenNodes [
+	^ self instructions
 ]
 
 { #category : #'dominator-tree' }
@@ -67,7 +91,6 @@ CEBlock >> dominator [
 
 { #category : #'dominator-tree' }
 CEBlock >> dominator: aCEBlock [ 
-	self haltIf: [ (aCEBlock isKindOf: CEBlock) not ].
 	dominator := aCEBlock
 ]
 
@@ -131,8 +154,19 @@ CEBlock >> initialize [
 ]
 
 { #category : #accessing }
-CEBlock >> instructionsDo: aBlockClosure [ 
+CEBlock >> instructions [
+	| result |
+	result := OrderedCollection new.
+	self instructionsDo: [ :each |
+		result add: each
+	].
+	^ result
+]
 
+{ #category : #accessing }
+CEBlock >> instructionsDo: aBlockClosure [ 
+	firstInstruction ifNil: [ ^ self ].
+	
 	firstInstruction instructionsDo: aBlockClosure
 ]
 
@@ -158,6 +192,11 @@ CEBlock >> locals [
 CEBlock >> locals: aCollection [ 
 	
 	locals := aCollection
+]
+
+{ #category : #'as yet unclassified' }
+CEBlock >> nodeTitle [
+	^ 'Block ' , id asString
 ]
 
 { #category : #accessing }
